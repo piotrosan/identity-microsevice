@@ -1,4 +1,3 @@
-"""Declare models and relationships."""
 from sqlalchemy import (
     Column,
     DateTime,
@@ -30,8 +29,6 @@ class User(Base):
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
-    external_login = relationship("ExternalLogin", uselist=False, back_populates="user")
-
 
 class ExternalLogin(Base):
 
@@ -41,6 +38,8 @@ class ExternalLogin(Base):
     user_id = Column(Integer, ForeignKey("user.id"))
     gmail = Column(BOOLEAN)
     facebook = Column(BOOLEAN)
+    create_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, onupdate=func.now())
 
     user = relationship("User", backref="external_login")
 

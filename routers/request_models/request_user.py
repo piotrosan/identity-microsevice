@@ -7,3 +7,7 @@ class RequestUser(BaseModel):
     age_range: str | None = None
     sector: str | None = None
     something_about_me: str | None = None
+
+
+class Token(BaseModel):
+    token: str

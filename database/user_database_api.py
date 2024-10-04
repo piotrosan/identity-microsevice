@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Any
 
 from typing_extensions import Any
 
@@ -26,26 +26,34 @@ class UserDatabaseAPI:
             order = []
 
         if column:
-            return select(*column).join_from(*join_models).where(*conditions).order_by(*order)
+            return select(*column).join_from(*join_models).where(
+                *conditions
+            ).order_by(*order)
         else:
-            select(model).join_from(*join_models).where(*conditions).order_by(*order)
+            select(model).join_from(*join_models).where(
+                *conditions
+            ).order_by(*order)
 
     def _build_insert(self, model: Base) -> Insert:
         return insert(model).returning(model)
+
     def _query_statement(self, sel: Select[Any]) -> Result[Any]:
         with session as s:
             return s.execute(sel)
+
     def _insert_statement(self, ins: Insert[Any], data: list) -> Result[Any]:
         with session as s:
-            return s.execute(ins, data)
+            res = s.execute(ins, data)
+            s.commit()
+        return res
 
     def update_statement(self, upd: Update[Any]) -> Result[Any]:
         with session as s:
             return s.execute(upd)
 
-    def insert(self, model: Base, data: list) -> Result[Any]:
+    def insert(self, model: Base, data: list) -> Sequence[Row[Any | Any]]:
         ins = self._build_insert(model)
-        return self._insert_statement(ins, data)
+        return self._insert_statement(ins, data).fetchall()
 
     def query_all_generator(
             self,
@@ -65,5 +73,6 @@ class UserDatabaseAPI:
             conditions: list = None,
             order: tuple = None
     ) -> Sequence[Row]:
-        return self._query_statement(self._build_select(model, column, conditions, order)).all()
+        return self._query_statement(
+            self._build_select(model, column, conditions, order)).all()
 

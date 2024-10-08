@@ -9,5 +9,12 @@ class RequestUser(BaseModel):
     something_about_me: str | None = None
 
 
+class LoginRequest:
+    gmail: bool | None = None
+    facebook: bool | None = None
+    email: str | None = None
+    password: str | None = None
+
+
 class Token(BaseModel):
     token: str

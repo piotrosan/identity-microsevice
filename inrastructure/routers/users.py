@@ -1,9 +1,9 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter
 
-from routers.request_models.request_user import RequestUser
-from routers.response_model.ResponseRegister import ResponseUserData
+from inrastructure.routers.request_models.request_user import RequestUser
+from inrastructure.routers.response_model.ResponseRegister import ResponseUserData
 
 router = APIRouter(
     prefix="/users",

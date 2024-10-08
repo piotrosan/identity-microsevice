@@ -5,15 +5,14 @@ from sqlalchemy import (
     String,
     Text,
     BOOLEAN,
-    ForeignKey,
-    UniqueConstraint
+    ForeignKey
 )
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from database import engine
-from database.models.base import Base
+from inrastructure.database import engine
+from inrastructure.database.models.base import Base
 
 
 class User(Base):
@@ -29,6 +28,8 @@ class User(Base):
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
+    external_login = relationship("ExternalLogin", back_populates="user")
+
 
 class ExternalLogin(Base):
 
@@ -41,7 +42,7 @@ class ExternalLogin(Base):
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
-    user = relationship("User", backref="external_login")
+    user = relationship("User", back_populates="external_login")
 
 
 Base.metadata.create_all(engine)

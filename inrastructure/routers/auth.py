@@ -1,6 +1,8 @@
 import requests
 
 from fastapi import APIRouter, Depends, HTTPException
+
+from domain.login_command_handler import RegisterUserCommandFactory
 from .request_models.request_user import RequestUser, Token
 from domain.users import Users
 from .response_model.ResponseRegister import UserContext
@@ -11,11 +13,19 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+command = RegisterUserCommandFactory
 
 @router.post("/register", response_model=UserContext)
 async def register(user_data: RequestUser):
     user = Users.add_user(user_data)
     return UserContext()
+
+
+@router.post("/login", response_model=UserContext)
+async def login(user_data: RequestUser):
+    login = command.from_request_data(user_data)
+    user_context = login()
+    return UserContext(**user_context)
 
 
 @router.post("/token-verify", response_model=UserContext)

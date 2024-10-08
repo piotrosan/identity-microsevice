@@ -2,9 +2,9 @@ from typing import Any
 
 from sqlalchemy import Result
 
-from database.models.user import User
-from database.user_database_api import UserDatabaseAPI
-from routers.request_models.request_user import RequestUser, Token
+from inrastructure.database.models.user import User
+from inrastructure.database import UserDatabaseAPI
+from inrastructure.routers.request_models.request_user import RequestUser
 
 
 class Users:

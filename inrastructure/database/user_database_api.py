@@ -4,12 +4,10 @@ from typing import Sequence, Iterable, List
 from typing_extensions import Any
 
 from . import session
-from sqlalchemy import Select, Result, Update, select, Row, text
+from sqlalchemy import Select, Update, select, Row, and_, text, String
 
-from .models.base import Base
 from .. import database as reload_session
 from .models.user import User, ExternalLogin
-from sqlalchemy.sql import operators
 
 
 class UserDatabaseAPI:
@@ -17,49 +15,14 @@ class UserDatabaseAPI:
     def reload_session(self):
         reload(reload_session)
 
-    def _build_select(
-            self,
-            model: Base,
-            join_models: tuple = None,
-            column: tuple = None,
-            conditions: dict = None,
-            order: tuple = None
-    ) -> Select[Any]:
-        statement = select(model)
-        if column is not None:
-            statement = statement.column(*column)
-        if join_models is not None:
-            statement = statement.join_from(
-                *[text(join_model) for join_model in join_models]
-            )
-        if conditions is not None:
-            statement = statement.where(
-                operators.__getattribute__(
-                    conditions['op']
-                )(*conditions['where_conditions'])
-            )
-        if order is not None:
-            statement = statement.order_by(*order)
-
-        return statement
-
-    def query_statement(
-            self,
-            model,
-            join_models: tuple = None,
-            column: tuple = None,
-            conditions: dict = None,
-            order: tuple = None
-    ) -> Row[Any]:
+    def query_statement(self, select_query: Select[Any]) -> Row[Any]:
         with session as s:
-            for row in s.execute(
-                    self._build_select(
-                        model, join_models, conditions, column, order)):
+            for row in s.execute(select_query):
                 yield row
 
     def insert_objects(self, objects: Iterable[object]) -> List[int]:
         with session as s:
-            res = s.bulk_save_objects(objects)
+            res = s.add_all(objects)
             s.commit()
         return res
 
@@ -86,32 +49,46 @@ class IdentityUserDBAPI:
         user.external_login = external_login_data
         return self.db.insert_objects([user])
 
+    def _select_all_user(
+            self,
+            column: List[str] = None,
+            order: List[str] = None
+    ):
+        tmp_select = select(User)
+
+        if column:
+            tmp_select.column(*[text(col) for col in column])
+
+        tmp_select.join_from(
+            ExternalLogin,
+            User
+        )
+        if order:
+            tmp_select.order_by(*[text(col) for col in order])
+
+        return tmp_select
+
     def query_all_users_with_external_login_generator(
             self,
-            model: Base,
-            join_models: tuple = None,
-            column: tuple = None,
-            conditions: dict = None,
-            order: tuple = None
+            column: List[str] = None,
+            order: List[str] = None
     ) -> Row[Any]:
-        return self.db.query_statement(model, column, order)
+        return self.db.query_statement(
+            self._select_all_user(column, order)
+        )
 
-    def query_all_user(
+    def raw_query_user(
             self,
-            model,
-            column: tuple = None,
-            order: tuple = None
+            select_query: Select[Any],
     ) -> Sequence[Row]:
         return self._query_statement(
-            self._build_select(model, column, order)
+            self.db.query_statement(select_query)
         ).all()
 
-    def query_result(
+    def raw_query_user_generator(
             self,
-            model,
-            column: tuple = None,
-            conditions: list = None,
-            order: tuple = None
-    ) -> Result[Any]:
+            select_query: Select[Any],
+    ) -> Row[Any]:
         return self._query_statement(
-            self._build_select(model, column, conditions, order))
+            self.db.query_statement(select_query)
+        )

@@ -10,7 +10,8 @@ from sqlalchemy import (
     BOOLEAN,
     ForeignKey,
     Table,
-    Enum
+    Enum,
+    UniqueConstraint
 )
 
 from sqlalchemy.orm import Mapped
@@ -51,8 +52,16 @@ class UserGroup(Base):
 class Role(Base):
     __tablename__ = "user_group_role"
 
+    __table_args__ = (
+        UniqueConstraint(
+            "app",
+            "role",
+            name="unique_constraint_app_role"),
+    )
+
     id = Column(Integer, primary_key=True, autoincrement="auto")
     app = Column(Enum(APPName))
+    role = Column(String(255))
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 

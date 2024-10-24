@@ -19,38 +19,24 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from inrastructure.database import engine
-from inrastructure.database.models.base import Base
+from inrastructure.database.models import Base
 
-
-from .user import association_table
-
-
-class UserGroupName(enum.Enum):
-    student = "Student"
-    teacher = "Teacher"
-    master = "Master"
-
-
-class APPName(enum.Enum):
-    flashcard = "FlashCard"
-    exercise = "Exercise"
-    wisdom = "Wisdom"
 
 
 class UserGroup(Base):
-    __tablename__ = "user_group"
+    __tablename__ = "user_groups"
 
     id = Column(Integer, primary_key=True, autoincrement="auto")
-    name = Column(Enum(UserGroupName))
+    name = Column(String(100))
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
-    user: Mapped[List["User"]] = relationship(
-        secondary=association_table, back_populates="user")
+    users: Mapped[List["AssociationUserUserGroup"]] = relationship(
+        back_populates="user_groups")
 
 
 class Role(Base):
-    __tablename__ = "user_group_role"
+    __tablename__ = "user_group_roles"
 
     __table_args__ = (
         UniqueConstraint(
@@ -60,8 +46,8 @@ class Role(Base):
     )
 
     id = Column(Integer, primary_key=True, autoincrement="auto")
-    app = Column(Enum(APPName))
-    role = Column(String(255))
+    app = Column(String(100))
+    role = Column(String(100))
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 

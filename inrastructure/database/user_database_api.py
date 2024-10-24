@@ -20,11 +20,11 @@ class UserDatabaseAPI:
             for row in s.execute(select_query):
                 yield row
 
-    def insert_objects(self, objects: Iterable[object]) -> List[int]:
+    def insert_objects(self, objects: Iterable[User]) -> Iterable[User]:
         with session as s:
-            res = s.add_all(objects)
+            s.add_all(objects)
             s.commit()
-        return res
+        return objects
 
     def _update_statement(self, upd: Update[Any]):
         with session as s:
@@ -38,7 +38,7 @@ class IdentityUserDBAPI:
         self.db = db_interface
 
     def insert_user_with_external_login(
-            self, user_data: dict, external_login_data: dict) -> List[int]:
+            self, user_data: dict, external_login_data: dict) -> Iterable[User]:
         """
         :param external_login_data:
         :param user_data:

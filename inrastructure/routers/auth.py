@@ -1,9 +1,12 @@
+from typing import Dict, Annotated
+
 import requests
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Body
 
 from domain.login_command_handler import RegisterUserCommandFactory
-from .request_models.request_user import RequestUser, Token
+from .request_models.request_user import RequestUser, Token, RegistrationData
 from domain.users import Users
 from .response_model.ResponseRegister import UserContext
 
@@ -15,10 +18,15 @@ router = APIRouter(
 
 command = RegisterUserCommandFactory
 
-@router.post("/register", response_model=UserContext)
-async def register(user_data: RequestUser):
-    user = Users.add_user(user_data)
-    return UserContext()
+@router.post("/register", response_model=Dict)
+async def register(
+        registration_data: Annotated[
+            RegistrationData, Body(embed=True)]
+) -> Dict:
+    users_ids = Users.add_user(registration_data)
+    if not users_ids:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return {"message": "User(s) was/were add"}
 
 
 @router.post("/login", response_model=UserContext)

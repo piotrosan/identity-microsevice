@@ -1,3 +1,4 @@
+import re
 import enum
 from typing import List
 
@@ -56,10 +57,24 @@ class User(Base):
         "Session", back_populates="user")
 
     @validates("email", include_removes=True)
-    def validate_address(self, key, email, is_remove):
-        # todo insert validation method for this like as on endpoint for react
-        if "@" not in email:
-            raise ValueError("failed simplified email validation")
+    def validate_email(self, key, email: str, is_remove):
+        patter_set = r"[^!#$%&‘*+–/=?\\^_`.{\\|}~ | ^a-zA-Z]"
+        local_part, domain, *rest = email.split("@")
+        if rest:
+            raise ValueError("Invalid email address, contain more than one @")
+        if not local_part and not domain:
+            raise ValueError("Invalid email address, not contain any of @")
+        if len(domain) > 253:
+            raise ValueError("Invalid email address, to long domain dns")
+
+        compile_for_invalid_char = re.search(
+            patter_set, f"{local_part}{domain}")
+
+        if compile_for_invalid_char:
+            raise ValueError(
+                f"Invalid email address contain any of "
+                f"prohibited char {compile_for_invalid_char.groups()}"
+            )
         return email
 
 
@@ -80,6 +95,3 @@ class ExternalLogin(Base):
     updated_at = Column(DateTime, onupdate=func.now())
 
     user: Mapped["User"] = relationship("User", back_populates="external_login")
-
-
-

@@ -32,4 +32,5 @@ class Session(Base):
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
-    user: Mapped["User"] = relationship("User", back_populates="sessions")
+    user: Mapped["User"] = relationship(
+        "User", back_populates="sessions")

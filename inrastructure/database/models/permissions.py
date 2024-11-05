@@ -1,4 +1,3 @@
-import enum
 from typing import List
 
 from sqlalchemy import (
@@ -53,5 +52,3 @@ class Role(Base):
 
     group: Mapped["UserGroup"] = relationship(
         "UserGroup", back_populates="user_group")
-
-Base.metadata.create_all(engine)

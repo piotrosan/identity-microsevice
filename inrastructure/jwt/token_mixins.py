@@ -38,7 +38,7 @@ class TokenValidator(TokenMethodBase):
     decoded_token = None
 
     @classmethod
-    def decode(cls, token) -> dict :
+    def decode(cls, token: str) -> dict :
         try:
             return jwt.decode(
                 token,

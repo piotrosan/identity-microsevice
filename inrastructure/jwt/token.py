@@ -1,5 +1,7 @@
+import abc
 import dataclasses
 import os
+from abc import abstractclassmethod, ABCMeta
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from uuid import UUID
@@ -8,13 +10,29 @@ from inrastructure.jwt.token_mixins import TokenCreator, TokenValidator
 
 
 @dataclass
-class Token(TokenCreator, TokenValidator):
+class AbstractToken(abc.ABC):
     exp: datetime
     iss: str
     at_hash: str
     token_type: str
     user_identifier: str
 
+    @abc.abstractmethod
+    def _encode(self, payload: dict) -> str:
+        raise NotImplemented
+
+    @abc.abstractmethod
+    def _create_hash(self, payload: dict) -> str:
+        raise NotImplemented
+
+    @classmethod
+    @abc.abstractmethod
+    def decode(cls, token: str) -> dict :
+        raise NotImplemented
+
+
+@dataclass
+class Token(TokenCreator, TokenValidator, AbstractToken):
     NOT_COPY_TO_HASH = ("exp", "token_type")
 
     def set_iss(self):

@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from uuid import UUID
 
-from inrastructure.jwt.token_mixins import TokenCreator, TokenValidator
+from inrastructure.jwt.token_mixins import TokenCreator, TokenValidator, \
+    TokenEncoder, TokenDecoder, TokenHelper
 
 
 @dataclass
@@ -32,7 +33,13 @@ class AbstractToken(abc.ABC):
 
 
 @dataclass
-class Token(TokenCreator, TokenValidator, AbstractToken):
+class Token(
+    TokenHelper,
+    TokenEncoder,
+    TokenDecoder,
+    TokenValidator,
+    AbstractToken
+):
     NOT_COPY_TO_HASH = ("exp", "token_type")
 
     def set_iss(self):
@@ -88,12 +95,12 @@ class RefreshToken(Token):
     def get_access_token(self) -> str:
         pass
 
-    def get_refresh_token(self, token: str):
+    def get_refresh_token(self):
         pass
 
     @classmethod
     def from_token(cls, refresh_token: str):
-        return RefreshToken(
+        return AccessToken(
             ** {
                 k: v for k, v in cls.decode(refresh_token)
                 if k not in cls.NOT_COPY_FROM_REFRESH

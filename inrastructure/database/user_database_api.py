@@ -1,11 +1,13 @@
 from importlib import reload
-from typing import Sequence, Iterable, List
+from typing import Sequence, Iterable, List, cast
+from uuid import UUID
 
 from typing_extensions import Any
 
 from . import session
 from sqlalchemy import Select, Update, select, Row, and_, text, String
 
+from .models.permissions import UserGroup
 from .. import database as reload_session
 from .models.user import User, ExternalLogin
 
@@ -68,6 +70,15 @@ class IdentityUserDBAPI:
 
         return tmp_select
 
+
+    def _select_user_from_hash(self, user_hash: UUID):
+        return select(User).where(
+            cast(
+                "ColumnElement[bool]",
+                User.hash_identifier == str(user_hash)
+            )
+        )
+
     def query_all_users_with_external_login_generator(
             self,
             column: List[str] = None,
@@ -75,6 +86,14 @@ class IdentityUserDBAPI:
     ) -> Row[Any]:
         return self.db.query_statement(
             self._select_all_user(column, order)
+        )
+
+    def query_user_generator(
+            self,
+            user_hash: UUID
+    ) -> Row[Any]:
+        return self.db.query_statement(
+            self._select_user_from_hash(user_hash)
         )
 
     def raw_query_user(

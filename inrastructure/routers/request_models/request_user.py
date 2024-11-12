@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from inrastructure.routers.response_model.ResponseRegister import UserContext
+
 
 class RequestUser(BaseModel):
     email: str
@@ -27,3 +29,8 @@ class Token(BaseModel):
 
 class RegistrationDexcata:
     pass
+
+
+class VerificationData:
+    user_context: UserContext
+    app: str

@@ -12,5 +12,4 @@ class ResponseUserData(BaseModel):
 class UserContext(BaseModel):
     email: str
     refresh_token: str | None = None
-    verify: bool | None = None
-
+    token: str

@@ -5,10 +5,13 @@ import requests
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Body
 
+from domain.auth import Auth
 from domain.login_command_handler import RegisterUserCommandFactory
-from .request_models.request_user import RequestUser, Token, RegistrationData
+from .request_models.request_user import RequestUser, Token, RegistrationData, \
+    VerificationData
 from domain.users import Users
 from .response_model.ResponseRegister import UserContext
+
 
 router = APIRouter(
     prefix="/auth",
@@ -36,9 +39,21 @@ async def login(user_data: RequestUser):
     return UserContext(**user_context)
 
 
+
 @router.post("/token-verify", response_model=UserContext)
-async def token_verify(token: Token):
-    return {}
+async def token_verify(
+        verification_data: Annotated[VerificationData, Body(embed=True)]
+):
+    return  Auth.token_verify(verification_data)
+
+
+@router.post("/refresh-verify", response_model=UserContext)
+async def refresh_token(
+        verification_data: Annotated[VerificationData, Body(embed=True)]
+):
+
+
+    return
 
 
 # @router.put(

@@ -39,6 +39,7 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, autoincrement="auto")
+    hash_identifier = Column(String(255), unique=True, nullable=False)
     email = Column(String(255), unique=True, nullable=False)
     password = Column(String(255), nullable=True)
     age_range = Column(Enum(AgeRange), unique=False, nullable=True)
@@ -55,6 +56,15 @@ class User(Base):
 
     user: Mapped[List["Session"]] = relationship(
         "Session", back_populates="user")
+
+    def set_password(self, password):
+        pass
+
+    def check_password(self, password):
+        pass
+
+    def set_hash_identifier(self, data: dict):
+        pass
 
     @validates("email", include_removes=True)
     def validate_email(self, key, email: str, is_remove):
@@ -76,7 +86,6 @@ class User(Base):
                 f"prohibited char {compile_for_invalid_char.groups()}"
             )
         return email
-
 
 class ExternalLogin(Base):
 

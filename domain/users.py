@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import jwt
 from typing import Any, List, Iterable
 
@@ -27,16 +29,9 @@ class Users:
 
     def register(self, registration_data: RegistrationData):
         users = self.add_user(registration_data)
-        jwt_data = jwt.encode({"some": "payload"}, key, algorithm="HS256")
 
-
-
-
-
-
-    def get_user_data(self, user_id: str):
-        pass
-
+    def get_user_data(self, user_hash: UUID) -> User:
+        return self.uda.query_user_generator(user_hash)._t
 
     def list_user(self):
         pass

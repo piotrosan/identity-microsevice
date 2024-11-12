@@ -4,3 +4,4 @@ alembic==1.13.3
 psycopg2==2.9.10
 oauthlib==3.2.2
 PyJWT==2.9.0
+redis==5.2.0

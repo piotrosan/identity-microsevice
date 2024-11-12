@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel
 
 
@@ -10,6 +12,5 @@ class ResponseUserData(BaseModel):
 
 
 class UserContext(BaseModel):
-    email: str
     refresh_token: str | None = None
     token: str

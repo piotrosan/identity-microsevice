@@ -7,11 +7,11 @@ from fastapi import Body
 
 from domain.auth import Auth
 from domain.login_command_handler import RegisterUserCommandFactory
-from .request_models.request_user import RequestUser, Token, RegistrationData, \
+from .request_models.request_user import RequestUser, RegistrationData, \
     VerificationData
-from domain.users import Users
-from .response_model.ResponseRegister import UserContext
-
+from domain.user_service import UserService
+from .response_model.response_register import UserContext
+from ..jwt.token import AccessToken, RefreshToken
 
 router = APIRouter(
     prefix="/auth",
@@ -21,23 +21,23 @@ router = APIRouter(
 
 command = RegisterUserCommandFactory
 
-@router.post("/register", response_model=Dict)
+@router.post("/register", response_model=UserContext)
 async def register(
         registration_data: Annotated[
             RegistrationData, Body(embed=True)]
-) -> Dict:
-    users_ids = Users.add_user(registration_data)
-    if not users_ids:
+) -> UserContext:
+    user_api = UserService()
+    try:
+        return user_api.register(registration_data)
+    except Exception:
         raise HTTPException(status_code=404, detail="Item not found")
-    return {"message": "User(s) was/were add"}
 
 
 @router.post("/login", response_model=UserContext)
 async def login(user_data: RequestUser):
-    login = command.from_request_data(user_data)
-    user_context = login()
+    l = command.from_request_data(user_data)
+    user_context = l()
     return UserContext(**user_context)
-
 
 
 @router.post("/token-verify", response_model=UserContext)
@@ -51,9 +51,7 @@ async def token_verify(
 async def refresh_token(
         verification_data: Annotated[VerificationData, Body(embed=True)]
 ):
-
-
-    return
+    return Auth.refresh_token(verification_data)
 
 
 # @router.put(

@@ -1,17 +1,22 @@
 import abc
 import dataclasses
 import os
-from abc import abstractclassmethod, ABCMeta
+from abc import ABC
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
+from typing import Literal
 from uuid import UUID
 
-from inrastructure.jwt.token_mixins import TokenCreator, TokenValidator, \
-    TokenEncoder, TokenDecoder, TokenHelper
+from inrastructure.jwt.helpers import create_hash
+from inrastructure.jwt.token_mixins import (
+    TokenValidator,
+    TokenEncoder,
+    TokenDecoder
+)
 
 
 @dataclass
-class AbstractToken(abc.ABC):
+class AbstractToken(ABC):
     exp: datetime
     iss: str
     at_hash: str
@@ -22,10 +27,6 @@ class AbstractToken(abc.ABC):
     def _encode(self, payload: dict) -> str:
         raise NotImplemented
 
-    @abc.abstractmethod
-    def _create_hash(self, payload: dict) -> str:
-        raise NotImplemented
-
     @classmethod
     @abc.abstractmethod
     def decode(cls, token: str) -> dict :
@@ -34,7 +35,6 @@ class AbstractToken(abc.ABC):
 
 @dataclass
 class Token(
-    TokenHelper,
     TokenEncoder,
     TokenDecoder,
     TokenValidator,
@@ -42,7 +42,7 @@ class Token(
 ):
     NOT_COPY_TO_HASH = ("exp", "token_type")
 
-    def set_iss(self):
+    def _set_iss(self):
         self.iss = os.getenv('token_iss')
 
     def set_user_data(self, user_data: dict):
@@ -51,12 +51,12 @@ class Token(
     def _get_dump_payload(self):
         return dataclasses.asdict(self)
 
-    def set_at_hash(self):
+    def _set_at_hash(self):
         dump_payload = self._get_dump_payload()
         for remove_attr in self.NOT_COPY_TO_HASH:
             del dump_payload[remove_attr]
 
-        self.at_hash = self._create_hash(dump_payload)
+        self.at_hash = create_hash(dump_payload, self.ALGORITHM)
 
     def get_user_identifier(self) -> UUID:
         try:
@@ -75,11 +75,16 @@ class AccessToken(Token):
             **{os.getenv('token_exp_time'): os.getenv('token_exp_delta')}
         )
 
-    def get_access_token(self, user_data: dict) -> str:
+    def get_access_token(self) -> str:
+        self._set_iss()
+        self.set_exp()
+        self._set_at_hash()
         return self._encode(self._get_dump_payload())
 
 @dataclass
 class RefreshToken(Token):
+    token_type: Literal["refresh_token"]
+
     NOT_COPY_FROM_REFRESH = ("exp", "token_type")
 
     def set_exp(self):
@@ -92,17 +97,15 @@ class RefreshToken(Token):
             }
         )
 
-    def get_access_token(self) -> str:
-        pass
-
-    def get_refresh_token(self):
-        pass
-
-    @classmethod
-    def from_token(cls, refresh_token: str):
+    def get_access_token_obj(self, refresh_token: str) -> AccessToken:
         return AccessToken(
-            ** {
-                k: v for k, v in cls.decode(refresh_token)
-                if k not in cls.NOT_COPY_FROM_REFRESH
+            **{
+                k: v for k, v in self.decode(refresh_token)
+                if k not in self.NOT_COPY_FROM_REFRESH
             })
 
+    def get_refresh_token(self) -> str:
+        self._set_iss()
+        self.set_exp()
+        self._set_at_hash()
+        return self._encode(self._get_dump_payload())

@@ -7,6 +7,7 @@ from typing_extensions import Any
 from . import session
 from sqlalchemy import Select, Update, select, Row, and_, text, String
 
+from .helpers import generate_user_identifier
 from .models.permissions import UserGroup
 from .. import database as reload_session
 from .models.user import User, ExternalLogin
@@ -47,6 +48,7 @@ class IdentityUserDBAPI:
         :return: list of id of created models
         """
         user = User(**user_data)
+        user.set_hash_identifier(user.email)
         external_login_data = ExternalLogin(**external_login_data)
         user.external_login = external_login_data
         return self.db.insert_objects([user])

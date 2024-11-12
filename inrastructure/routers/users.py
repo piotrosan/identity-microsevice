@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter
 
 from inrastructure.routers.request_models.request_user import RequestUser
-from inrastructure.routers.response_model.ResponseRegister import ResponseUserData
+from inrastructure.routers.response_model.response_register import ResponseUserData
 
 router = APIRouter(
     prefix="/users",

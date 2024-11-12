@@ -7,21 +7,13 @@ import jwt
 from dataclasses import dataclass
 
 from inrastructure.jwt.exceptions import DifferentTokenHash, TokenAudience
+from inrastructure.jwt.helpers import create_hash
+
 
 class TokenMethodBase:
     ALGORITHM = "HS256"
 
 
-class TokenHelper(TokenMethodBase):
-
-    def _create_hash(self, payload: dict) -> str:
-        alg_obj = jwt.get_algorithm_by_name(self.ALGORITHM)
-        return alg_obj.compute_hash_digest(
-            json.dumps(payload).encode('UTF-8')
-        )
-
-
-@dataclass
 class TokenEncoder(TokenMethodBase):
 
     def _encode(self, payload: dict) -> str:
@@ -50,7 +42,6 @@ class TokenDecoder(TokenMethodBase):
             raise ValueError("Problem with token decode")
 
 
-@dataclass
 class TokenValidator(TokenMethodBase):
     decoded_token = None
 
@@ -60,7 +51,7 @@ class TokenValidator(TokenMethodBase):
         del tmp_decoded_token_payload["exp"]
 
         at_hash = tmp_decoded_token_payload.pop("at_hash")
-        if at_hash != self._create_hash(tmp_decoded_token_payload):
+        if at_hash != create_hash(tmp_decoded_token_payload, self.ALGORITHM):
             # todo add log exception to log file
             raise DifferentTokenHash("Mismatch token hash")
 

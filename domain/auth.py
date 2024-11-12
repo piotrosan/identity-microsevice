@@ -1,28 +1,30 @@
-from inrastructure.routers.request_models.request_user import Token, \
+from inrastructure.jwt.token import Token, RefreshToken
+from inrastructure.routers.request_models.request_user import (
     RequestUser, LoginRequest, VerificationData
+)
 
-from inrastructure.jwt.token_mixins import JwtValidator
-from inrastructure.routers.response_model.ResponseRegister import UserContext
+from inrastructure.routers.response_model.response_register import UserContext
 
 
 class Auth:
 
-    @staticmethod
+    @classmethod
     def token_verify(cls, verification_data: VerificationData) -> bool:
-        jwt_cv = JwtValidator()
-        return jwt_cv.validate(
-            verification_data.user_context.token, verification_data.app
+        token = Token()
+        return token.validate(
+            verification_data.user_context.token,
+            verification_data.app
         )
 
-    def refresh_token(self, verification_data: VerificationData) -> UserContext:
-        jwt_validator = JwtValidator()
-        token, refresh_token = jwt_validator.refresh_token(
-            verification_data.user_context.refresh_token)
-
-        verification_data.user_context.token = token
-        verification_data.user_context.refresh_token = refresh_token
+    @classmethod
+    def refresh_token(cls, verification_data: VerificationData) -> UserContext:
+        refresh_token = RefreshToken()
+        access_token = refresh_token.get_access_token_obj(
+            verification_data.user_context.refresh_token
+        )
+        refresh_token.set_user_data({
+            "user_identifier": access_token.user_identifier
+        })
+        verification_data.user_context.token = access_token.get_access_token()
+        verification_data.user_context.refresh_token = refresh_token.get_refresh_token()
         return verification_data.user_context
-
-    @staticmethod
-    def login(cls, login_user_request: LoginRequest):
-        pass

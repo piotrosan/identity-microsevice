@@ -5,3 +5,4 @@ psycopg2==2.9.10
 oauthlib==3.2.2
 PyJWT==2.9.0
 redis==5.2.0
+bcrypt==4.2.0

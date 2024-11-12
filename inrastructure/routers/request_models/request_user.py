@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from inrastructure.routers.response_model.ResponseRegister import UserContext
+from inrastructure.routers.response_model.response_register import UserContext
 
 
 class RequestUser(BaseModel):
@@ -21,14 +21,6 @@ class LoginRequest(BaseModel):
 class RegistrationData:
     user_data: RequestUser
     external_login_data: LoginRequest
-
-
-class Token(BaseModel):
-    token: str
-
-
-class RegistrationDexcata:
-    pass
 
 
 class VerificationData:

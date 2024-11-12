@@ -1,4 +1,0 @@
-
-
-class RegisterService:
-    pass

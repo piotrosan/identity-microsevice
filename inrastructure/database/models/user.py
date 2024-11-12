@@ -1,5 +1,7 @@
 import re
 import enum
+import bcrypt
+import uuid
 from typing import List
 
 from sqlalchemy import (
@@ -20,7 +22,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import validates
 
 from inrastructure.database import engine
-from inrastructure.database.models import Base
+from inrastructure.database.models.base import Base
 
 
 class AgeRange(enum.Enum):
@@ -49,22 +51,24 @@ class User(Base):
     updated_at = Column(DateTime, onupdate=func.now())
 
     external_login: Mapped["ExternalLogin"] = relationship(
-        "ExternalLogin", back_populates="user")
+        "ExternalLogin", back_populates="users")
 
     user_groups: Mapped[List["AssociationUserUserGroup"]] = relationship(
-        back_populates="user")
+        back_populates="users")
 
     user: Mapped[List["Session"]] = relationship(
-        "Session", back_populates="user")
+        "Session", back_populates="users")
 
     def set_password(self, password):
-        pass
+        self.password = bcrypt.hashpw(password, bcrypt.gensalt())
 
-    def check_password(self, password):
-        pass
+    def check_password(self, password) -> bool:
+        return self.password == bcrypt.hashpw(password, bcrypt.gensalt())
 
-    def set_hash_identifier(self, data: dict):
-        pass
+    def set_hash_identifier(self, email: str):
+        self.hash_identifier = str(
+            uuid.uuid5(namespace=uuid.NAMESPACE_DNS, name=email)
+        )
 
     @validates("email", include_removes=True)
     def validate_email(self, key, email: str, is_remove):
@@ -92,7 +96,7 @@ class ExternalLogin(Base):
     __tablename__ = "external_logins"
 
     id = Column(Integer, primary_key=True, autoincrement="auto")
-    user_id = Column(Integer, ForeignKey("user.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
     gmail = Column(BOOLEAN)
     facebook = Column(BOOLEAN)
     client_key = Column(String, nullable=True)
@@ -103,4 +107,4 @@ class ExternalLogin(Base):
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
-    user: Mapped["User"] = relationship("User", back_populates="external_login")
+    user: Mapped["User"] = relationship("User", back_populates="external_logins")

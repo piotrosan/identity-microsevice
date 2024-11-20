@@ -21,8 +21,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.orm import validates
 
-from inrastructure.database import engine
-from inrastructure.database.models.base import Base
+from inrastructure.sql_database import engine
+from inrastructure.sql_database.models.base import Base
 
 
 class AgeRange(enum.Enum):

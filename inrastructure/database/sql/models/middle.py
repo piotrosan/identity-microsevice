@@ -4,9 +4,9 @@ from sqlalchemy import (
 
 from sqlalchemy.orm import mapped_column, relationship, Mapped
 
-from inrastructure.database.models.user import User
-from inrastructure.database.models.permissions import UserGroup
-from inrastructure.database.models.base import Base
+from inrastructure.sql_database.models.user import User
+from inrastructure.sql_database.models.permissions import UserGroup
+from inrastructure.sql_database.models.base import Base
 
 class AssociationUserUserGroup(Base):
     __tablename__ = "association_user_user_group"

@@ -9,7 +9,7 @@ from sqlalchemy import Select, Update, select, Row, and_, text, String
 
 from .helpers import generate_user_identifier
 from .models.permissions import UserGroup
-from .. import database as reload_session
+from .. import sql_database as reload_session
 from .models.user import User, ExternalLogin
 
 

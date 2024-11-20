@@ -13,7 +13,7 @@ from sqlalchemy import (
 
 from sqlalchemy.sql import func
 
-from inrastructure.database.models.base import Base
+from inrastructure.sql_database.models.base import Base
 
 
 class BlockedEmailDomain(Base):

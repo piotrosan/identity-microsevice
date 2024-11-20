@@ -6,3 +6,5 @@ oauthlib==3.2.2
 PyJWT==2.9.0
 redis==5.2.0
 bcrypt==4.2.0
+pymongo==4.10.1
+beanie==1.27.0

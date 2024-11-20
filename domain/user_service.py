@@ -6,8 +6,8 @@ from typing import Any, List, Iterable
 from sqlalchemy import Result
 from sqlalchemy import exc
 
-from inrastructure.database.models.user import User
-from inrastructure.database.user_database_api import UserDatabaseAPI, IdentityUserDBAPI
+from inrastructure.sql_database.models.user import User
+from inrastructure.sql_database.user_database_api import UserDatabaseAPI, IdentityUserDBAPI
 from inrastructure.jwt.token import AccessToken, RefreshToken
 from inrastructure.routers.request_models.request_user import RegistrationData
 from inrastructure.routers.response_model.response_register import UserContext

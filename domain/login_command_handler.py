@@ -1,10 +1,10 @@
-from inrastructure.logger import Logger
+from inrastructure.logger.logger import Logger
 from inrastructure.routers.request_models.request_user import RequestUser, \
     LoginRequest
 from inrastructure.validators.user_data_validator import UserDataValidator
 
 
-class Login(Logger):
+class Login:
     command = None
 
     def __init__(self, command: LoginRequest):
@@ -17,18 +17,8 @@ class Login(Logger):
         try:
             return self._login()
         except Exception as e:
-            self.log(
-                [self.target.CONSOLE],
-                f'Problem while login '
-                f'to application user {self.command}'
-            )
-            self.log(
-                [self.target.DATABASE],
-                f'Exception while login '
-                f'user {self.command} -> {e}'
-            )
-        self.log([self.target.FILE], self.command)
-
+            #ToDo log
+            pass
 
 class RegisterUserCommandFactory:
     user_data_validator = UserDataValidator

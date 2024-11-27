@@ -1,17 +1,21 @@
 from uuid import UUID
-
+import logging
 import jwt
 from typing import Any, List, Iterable
 
 from sqlalchemy import Result
-from sqlalchemy import exc
 
-from inrastructure.sql_database.models.user import User
-from inrastructure.sql_database.user_database_api import UserDatabaseAPI, IdentityUserDBAPI
+
+from inrastructure.database.sql.models.user import User
+from inrastructure.database.sql.user_database_api import (
+    UserDatabaseAPI,
+    IdentityUserDBAPI,
+)
 from inrastructure.jwt.token import AccessToken, RefreshToken
 from inrastructure.routers.request_models.request_user import RegistrationData
 from inrastructure.routers.response_model.response_register import UserContext
 
+logger = logging.getLogger("root")
 
 class UserService:
 
@@ -19,15 +23,11 @@ class UserService:
     model = User
 
     def add_user(self, registration_data: RegistrationData) -> User:
-        try:
-            return self.uda.insert_user_with_external_login(
-                registration_data.user_data.model_dump(mode="python"),
-                registration_data.external_login_data.model_dump(mode="python")
-            )[0]
-        except exc.UnmappedInstanceError as e:
-            # todo log exception
-            return []
-
+        result = self.uda.insert_user_with_external_login(
+            registration_data.user_data.model_dump(mode="python"),
+            registration_data.external_login_data.model_dump(mode="python")
+        )
+        return result[0]
 
     def register(self, registration_data: RegistrationData) -> UserContext:
         user = self.add_user(registration_data)
@@ -46,6 +46,7 @@ class UserService:
     )
 
     def get_user_data(self, user_hash: UUID) -> User:
+        # ToDo check what i must return
         return self.uda.query_user_generator(user_hash)
 
     def list_user(self):

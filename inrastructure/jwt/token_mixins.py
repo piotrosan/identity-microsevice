@@ -1,3 +1,4 @@
+import logging
 import os
 import json
 from _datetime import datetime, timezone, timedelta
@@ -9,6 +10,7 @@ from dataclasses import dataclass
 from inrastructure.jwt.exceptions import DifferentTokenHash, TokenAudience
 from inrastructure.jwt.helpers import create_hash
 
+logger = logging.getLogger("root")
 
 class TokenMethodBase:
     ALGORITHM = "HS256"
@@ -24,7 +26,7 @@ class TokenEncoder(TokenMethodBase):
                 algorithm=self.ALGORITHM
             )
         except Exception as e:
-            # todo add log exception to log file
+            logger.exception(f"Problem with encode user payload {payload} -> {e}")
             raise ValueError("Problem with token encode")
 
 

@@ -1,4 +1,5 @@
 import logging
+import traceback
 from datetime import datetime
 
 from inrastructure.database.nosql.database_api import MongoDbAPI
@@ -20,20 +21,21 @@ class MongoDbHandler(logging.Handler):
             "message": record.message,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "level": record.levelname,
-            "action": record.funcName,
+            "traceback": traceback.format_exc(),
+            "action": record.funcName
         })
 
 
 class FluentdHandler(logging.Handler):
 
-    def __init__(self)-> None:
-        self.sender = FluentdAPI()
+    def __init__(self) -> None:
+        self.sender = FluentdAPI("identity.service")
         logging.Handler.__init__(self=self)
 
     def emit(self, record) -> None:
-        self.sender.send({
+        self.sender.send(record.funcName, {
             "message": record.message,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "level": record.levelname,
-            "action": record.funcName,
+            "traceback": traceback.format_exc(),
         })

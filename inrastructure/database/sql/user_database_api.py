@@ -1,3 +1,4 @@
+import logging
 from importlib import reload
 from typing import Sequence, Iterable, List, cast
 from uuid import UUID
@@ -6,12 +7,11 @@ from typing_extensions import Any
 
 from . import session
 from sqlalchemy import Select, Update, select, Row, and_, text, String
-
-from .helpers import generate_user_identifier
-from .models.permissions import UserGroup
-from .. import sql_database as reload_session
+from sqlalchemy import exc
+import inrastructure.database.sql as reload_session
 from .models.user import User, ExternalLogin
 
+logger = logging.getLogger("root")
 
 class UserDatabaseAPI:
 
@@ -34,7 +34,6 @@ class UserDatabaseAPI:
             s.execute(upd).scalar()
             s.commit()
 
-
 class IdentityUserDBAPI:
 
     def __init__(self, db_interface: UserDatabaseAPI):
@@ -47,11 +46,15 @@ class IdentityUserDBAPI:
         :param user_data:
         :return: list of id of created models
         """
-        user = User(**user_data)
-        user.set_hash_identifier(user.email)
-        external_login_data = ExternalLogin(**external_login_data)
-        user.external_login = external_login_data
-        return self.db.insert_objects([user])
+        try:
+            user = User(**user_data)
+            user.set_hash_identifier(user.email)
+            external_login_data = ExternalLogin(**external_login_data)
+            user.external_login = external_login_data
+            return self.db.insert_objects([user])
+        except exc.SQLAlchemyError as e:
+            logger.critical(f"Problem wile insert user {user_data} -> {e}")
+            raise ValueError("Can not insert user")
 
     def _select_all_user(
             self,
@@ -72,7 +75,6 @@ class IdentityUserDBAPI:
 
         return tmp_select
 
-
     def _select_user_from_hash(self, user_hash: UUID):
         return select(User).where(
             cast(
@@ -86,30 +88,52 @@ class IdentityUserDBAPI:
             column: List[str] = None,
             order: List[str] = None
     ) -> Row[Any]:
-        return self.db.query_statement(
-            self._select_all_user(column, order)
-        )
+        try:
+            return self.db.query_statement(
+                self._select_all_user(column, order)
+            )
+        except exc.SQLAlchemyError as e:
+            logger.critical("Problem wile select all users")
+            raise ValueError("Can not select users")
 
     def query_user_generator(
             self,
             user_hash: UUID
     ) -> Row[Any]:
-        return self.db.query_statement(
-            self._select_user_from_hash(user_hash)
-        )
+        try:
+            return self.db.query_statement(
+                self._select_user_from_hash(user_hash)
+            )
+        except exc.SQLAlchemyError as e:
+            logger.critical(f"Problem wile select user {user_hash} -> {e}")
+            raise ValueError(f"Can not select user {user_hash}")
 
     def raw_query_user(
             self,
             select_query: Select[Any],
     ) -> Sequence[Row]:
-        return self._query_statement(
-            self.db.query_statement(select_query)
-        ).all()
+        try:
+            return self._query_statement(
+                self.db.query_statement(select_query)
+            ).all()
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                f"Problem wile select user from "
+                f"custom select statement -> {e}"
+            )
+            raise ValueError("Can not select user")
 
     def raw_query_user_generator(
             self,
             select_query: Select[Any],
     ) -> Row[Any]:
-        return self._query_statement(
-            self.db.query_statement(select_query)
-        )
+        try:
+            return self._query_statement(
+                self.db.query_statement(select_query)
+            ).all()
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                f"Problem wile select user from "
+                f"custom select statement -> {e}"
+            )
+            raise ValueError("Can not select user")

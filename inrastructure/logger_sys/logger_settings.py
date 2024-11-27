@@ -17,17 +17,21 @@ dictConfig({
     "handlers": {
         "std_handler": {
             "class": "logging.StreamHandler",
-            "formatter": "stdformatter",
+            "formatter": "file_formatter",
             'stream': 'ext://sys.stdout'
         },
-        "mongo_handler": {
-            "class": "infrastructure.logger_sys.handlers.MongoDbHandler",
+        # "mongo_handler": {
+        #     "class": "infrastructure.logger_sys.handlers.MongoDbHandler",
+        #     "formatter": "db_formatter",
+        # },
+        "fluentd_handler": {
+            "class": "infrastructure.logger_sys.handlers.FluentdHandler",
             "formatter": "db_formatter",
         },
     },
     "loggers" : {
         "root": {
-            "handlers": ["std_handler", "mongo_handler"],
+            "handlers": ["std_handler", "fluentd_handler"],
             "level": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
             "propagate": True
             }

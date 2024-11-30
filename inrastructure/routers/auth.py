@@ -28,7 +28,7 @@ async def register(
 ) -> UserContext:
     user_api = UserService()
     try:
-        return user_api.register(registration_data)
+        return await user_api.register(registration_data)
     except Exception:
         raise HTTPException(status_code=404, detail="Item not found")
 

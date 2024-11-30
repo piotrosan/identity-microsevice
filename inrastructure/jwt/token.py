@@ -9,17 +9,16 @@ from uuid import UUID
 
 from inrastructure.jwt.helpers import create_hash
 from inrastructure.jwt.token_mixins import (
-    TokenValidator,
-    TokenEncoder,
-    TokenDecoder
+    TokenValidatorMixin,
+    TokenEncoderMixin,
+    TokenDecoderMixin
 )
-
 
 @dataclass
 class AbstractToken(ABC):
-    exp: datetime
-    iss: str
-    at_hash: str
+    exp: datetime | None
+    iss: str | None
+    at_hash: str | None
     token_type: str
     user_identifier: str
 
@@ -33,11 +32,10 @@ class AbstractToken(ABC):
         raise NotImplemented
 
 
-@dataclass
 class Token(
-    TokenEncoder,
-    TokenDecoder,
-    TokenValidator,
+    TokenEncoderMixin,
+    TokenDecoderMixin,
+    TokenValidatorMixin,
     AbstractToken
 ):
     NOT_COPY_TO_HASH = ("exp", "token_type")
@@ -65,8 +63,10 @@ class Token(
             raise ValueError("Not correct user identifier")
 
 
-@dataclass
 class AccessToken(Token):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def set_exp(self):
         self.exp = datetime.now(
@@ -81,11 +81,14 @@ class AccessToken(Token):
         self._set_at_hash()
         return self._encode(self._get_dump_payload())
 
-@dataclass
+
 class RefreshToken(Token):
     token_type: Literal["refresh_token"]
 
     NOT_COPY_FROM_REFRESH = ("exp", "token_type")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def set_exp(self):
         self.exp = datetime.now(
@@ -98,11 +101,10 @@ class RefreshToken(Token):
         )
 
     def get_access_token_obj(self, refresh_token: str) -> AccessToken:
-        return AccessToken(
-            **{
-                k: v for k, v in self.decode(refresh_token)
-                if k not in self.NOT_COPY_FROM_REFRESH
-            })
+        return AccessToken(**{
+            k: v for k, v in self.decode(refresh_token)
+            if k not in self.NOT_COPY_FROM_REFRESH
+        })
 
     def get_refresh_token(self) -> str:
         self._set_iss()

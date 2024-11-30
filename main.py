@@ -1,6 +1,20 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from inrastructure.routers import auth, users
+from inrastructure.settings.context_app import Settings, settings
+
 app = FastAPI()
+
+
+@app.on_event("startup")
+async def startup_event():
+    pass
+
+@app.middleware("http")
+async def set_base_url(request: Request, call_next):
+    if not settings.base_link:
+        settings.base_link = request.base_url
+    response = await call_next(request)
+    return response
 
 
 app.include_router(auth.router)

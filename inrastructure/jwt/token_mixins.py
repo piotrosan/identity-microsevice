@@ -16,7 +16,7 @@ class TokenMethodBase:
     ALGORITHM = "HS256"
 
 
-class TokenEncoder(TokenMethodBase):
+class TokenEncoderMixin(TokenMethodBase):
 
     def _encode(self, payload: dict) -> str:
         try:
@@ -30,7 +30,7 @@ class TokenEncoder(TokenMethodBase):
             raise ValueError("Problem with token encode")
 
 
-class TokenDecoder(TokenMethodBase):
+class TokenDecoderMixin(TokenMethodBase):
 
     @classmethod
     def decode(cls, token: str) -> dict :
@@ -44,7 +44,7 @@ class TokenDecoder(TokenMethodBase):
             raise ValueError("Problem with token decode")
 
 
-class TokenValidator(TokenMethodBase):
+class TokenValidatorMixin(TokenMethodBase):
     decoded_token = None
 
     def custom_validate(self, app):

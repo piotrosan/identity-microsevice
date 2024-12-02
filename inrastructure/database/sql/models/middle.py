@@ -4,9 +4,9 @@ from sqlalchemy import (
 
 from sqlalchemy.orm import mapped_column, relationship, Mapped
 
-from inrastructure.sql_database.models.user import User
-from inrastructure.sql_database.models.permissions import UserGroup
-from inrastructure.sql_database.models.base import Base
+from inrastructure.database.sql.models.user import User
+from inrastructure.database.sql.models.permissions import UserGroup
+from inrastructure.database.sql.models.base import Base
 
 class AssociationUserUserGroup(Base):
     __tablename__ = "association_user_user_group"
@@ -17,5 +17,5 @@ class AssociationUserUserGroup(Base):
     group_id: Mapped[int] = mapped_column(
         ForeignKey("user_groups.id"), primary_key=True
     )
-    user: Mapped["User"] = relationship(UserGroup)
-    user_group: Mapped["UserGroup"] = relationship(User)
+    users: Mapped["User"] = relationship(UserGroup)
+    user_groups: Mapped["UserGroup"] = relationship(User)

@@ -18,12 +18,13 @@ class TokenMethodBase:
 
 class TokenEncoderMixin(TokenMethodBase):
 
-    def _encode(self, payload: dict) -> str:
+    @classmethod
+    def encode(cls, payload: dict) -> str:
         try:
             return jwt.encode(
                 payload,
                 os.getenv('hs_key'),
-                algorithm=self.ALGORITHM
+                algorithm=cls.ALGORITHM
             )
         except Exception as e:
             logger.exception(f"Problem with encode user payload {payload} -> {e}")
@@ -40,7 +41,7 @@ class TokenDecoderMixin(TokenMethodBase):
                 key=os.getenv('hs_key'),
                 algorithms=[cls.ALGORITHM])
         except jwt.DecodeError as e:
-            # todo add log exception to log file
+            logger.error(f"Problem while decode token {e}")
             raise ValueError("Problem with token decode")
 
 
@@ -54,14 +55,20 @@ class TokenValidatorMixin(TokenMethodBase):
 
         at_hash = tmp_decoded_token_payload.pop("at_hash")
         if at_hash != create_hash(tmp_decoded_token_payload, self.ALGORITHM):
-            # todo add log exception to log file
+            logger.error("Token stamp is incorrect")
             raise DifferentTokenHash("Mismatch token hash")
 
         if app not in self.decoded_token["aud"]:
-            # todo add log exception to log file
+            logger.error("Requested application doesnt fit to token")
             raise TokenAudience("User have not access to app")
 
     def validate(self, token, app) -> bool:
+        if not (
+            hasattr(self, "decode")
+            and callable(getattr(self, "decode"))
+        ):
+            raise NotImplemented("Implement decode method")
+
         self.decoded_token = self.decode(token)
         self.custom_validate(app)
         return True

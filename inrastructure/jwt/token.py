@@ -22,8 +22,9 @@ class AbstractToken(ABC):
     token_type: str
     user_identifier: str
 
+    @classmethod
     @abc.abstractmethod
-    def _encode(self, payload: dict) -> str:
+    def encode(cls, payload: dict) -> str:
         raise NotImplemented
 
     @classmethod
@@ -31,7 +32,17 @@ class AbstractToken(ABC):
     def decode(cls, token: str) -> dict :
         raise NotImplemented
 
+    @abc.abstractmethod
+    def validate(self, token: str) -> bool:
+        raise NotImplemented
 
+    @classmethod
+    @abc.abstractmethod
+    def from_str(cls, token: str) -> "AbstractToken":
+        raise NotImplemented
+
+
+@dataclass
 class Token(
     TokenEncoderMixin,
     TokenDecoderMixin,
@@ -65,9 +76,6 @@ class Token(
 
 class AccessToken(Token):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def set_exp(self):
         self.exp = datetime.now(
             tz=timezone.utc
@@ -79,7 +87,7 @@ class AccessToken(Token):
         self._set_iss()
         self.set_exp()
         self._set_at_hash()
-        return self._encode(self._get_dump_payload())
+        return self.encode(self._get_dump_payload())
 
 
 class RefreshToken(Token):
@@ -110,4 +118,4 @@ class RefreshToken(Token):
         self._set_iss()
         self.set_exp()
         self._set_at_hash()
-        return self._encode(self._get_dump_payload())
+        return self.encode(self._get_dump_payload())

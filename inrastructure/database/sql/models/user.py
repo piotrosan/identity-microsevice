@@ -21,8 +21,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.orm import validates
 
-from inrastructure.sql_database import engine
-from inrastructure.sql_database.models.base import Base
+from inrastructure.database.sql import engine
+from inrastructure.database.sql.models.base import Base
 
 
 class AgeRange(enum.Enum):
@@ -50,14 +50,14 @@ class User(Base):
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
-    external_login: Mapped["ExternalLogin"] = relationship(
-        "ExternalLogin", back_populates="users")
+    external_logins: Mapped["ExternalLogin"] = relationship(
+        back_populates="users")
 
     user_groups: Mapped[List["AssociationUserUserGroup"]] = relationship(
         back_populates="users")
 
-    user: Mapped[List["Session"]] = relationship(
-        "Session", back_populates="users")
+    # user: Mapped[List["Session"]] = relationship(
+    #     "Session", back_populates="users")
 
     def set_password(self, password):
         self.password = bcrypt.hashpw(password, bcrypt.gensalt())
@@ -107,4 +107,4 @@ class ExternalLogin(Base):
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
-    user: Mapped["User"] = relationship("User", back_populates="external_logins")
+    users: Mapped["User"] = relationship(back_populates="external_logins")

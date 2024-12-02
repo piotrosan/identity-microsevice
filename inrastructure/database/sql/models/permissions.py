@@ -17,8 +17,8 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from inrastructure.sql_database import engine
-from inrastructure.sql_database.models.base import Base
+from inrastructure.database.sql import engine
+from inrastructure.database.sql.models.base import Base
 
 
 

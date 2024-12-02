@@ -1,4 +1,3 @@
-from inrastructure.logger.logger import Logger
 from inrastructure.routers.request_models.request_user import RequestUser, \
     LoginRequest
 from inrastructure.validators.user_data_validator import UserDataValidator

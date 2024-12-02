@@ -14,11 +14,8 @@ class RequestUser(BaseModel):
 class LoginRequest(BaseModel):
     gmail: bool | None = None
     facebook: bool | None = None
-    email: str | None = None
-    password: str | None = None
 
-
-class RegistrationData:
+class RegistrationData(BaseModel):
     user_data: RequestUser
     external_login_data: LoginRequest
 

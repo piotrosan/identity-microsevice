@@ -1,6 +1,7 @@
-from typing import Dict, Annotated
+from typing import Dict, Annotated, Union, Any
 
 import requests
+import starlette
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Body
@@ -21,11 +22,14 @@ router = APIRouter(
 
 command = RegisterUserCommandFactory
 
-@router.post("/register", response_model=UserContext)
+@router.post(
+    "/register",
+    response_model=Union[UserContext]
+)
 async def register(
         registration_data: Annotated[
             RegistrationData, Body(embed=True)]
-) -> UserContext:
+) -> Any:
     user_api = UserService()
     try:
         return await user_api.register(registration_data)
@@ -33,25 +37,25 @@ async def register(
         raise HTTPException(status_code=404, detail="Item not found")
 
 
-@router.post("/login", response_model=UserContext)
-async def login(user_data: RequestUser):
-    l = command.from_request_data(user_data)
-    user_context = l()
-    return UserContext(**user_context)
-
-
-@router.post("/token-verify", response_model=UserContext)
-async def token_verify(
-        verification_data: Annotated[VerificationData, Body(embed=True)]
-):
-    return  Auth.token_verify(verification_data)
-
-
-@router.post("/refresh-verify", response_model=UserContext)
-async def refresh_token(
-        verification_data: Annotated[VerificationData, Body(embed=True)]
-):
-    return Auth.refresh_token(verification_data)
+# @router.post("/login", response_model=UserContext)
+# async def login(user_data: RequestUser):
+#     l = command.from_request_data(user_data)
+#     user_context = l()
+#     return UserContext(**user_context)
+#
+#
+# @router.post("/token-verify", response_model=UserContext)
+# async def token_verify(
+#         verification_data: Annotated[VerificationData, Body(embed=True)]
+# ):
+#     return  Auth.token_verify(verification_data)
+#
+#
+# @router.post("/refresh-verify", response_model=UserContext)
+# async def refresh_token(
+#         verification_data: Annotated[VerificationData, Body(embed=True)]
+# ):
+#     return Auth.refresh_token(verification_data)
 
 
 # @router.put(

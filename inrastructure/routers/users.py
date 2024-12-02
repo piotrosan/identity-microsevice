@@ -12,16 +12,16 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[ResponseUserData])
-async def get_users():
-    return {}
-
-
-@router.get("/{user_id}", response_model=ResponseUserData)
-async def get_user(user_id: str):
-    return {}
-
-
-@router.put("/{user_id}", response_model=ResponseUserData)
-async def modify_user(user_data: RequestUser, user_id: str):
-    return {}
+# @router.get("/", response_model=List[ResponseUserData])
+# async def get_users():
+#     return {}
+#
+#
+# @router.get("/{user_id}", response_model=ResponseUserData)
+# async def get_user(user_id: str):
+#     return {}
+#
+#
+# @router.put("/{user_id}", response_model=ResponseUserData)
+# async def modify_user(user_data: RequestUser, user_id: str):
+#     return {}

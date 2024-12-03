@@ -54,7 +54,7 @@ class User(Base):
         back_populates="users")
 
     user_groups: Mapped[List["AssociationUserUserGroup"]] = relationship(
-        back_populates="users")
+        back_populates="user")
 
     # user: Mapped[List["Session"]] = relationship(
     #     "Session", back_populates="users")
@@ -70,6 +70,20 @@ class User(Base):
             uuid.uuid5(namespace=uuid.NAMESPACE_DNS, name=email)
         )
 
+    @validates("sector", include_removes=True)
+    def validate_sector(self, key, sector, is_remove):
+        sector_enum = Sector(sector)
+        if not sector_enum:
+            raise ValueError("Invalid sector value")
+        return sector_enum
+
+    @validates("age_range", include_removes=True)
+    def validate_age_range(self, key, age_range, is_remove):
+        age_range_enum = AgeRange(age_range)
+        if not age_range_enum:
+            raise ValueError("Invalid age range value")
+        return age_range_enum
+
     @validates("email", include_removes=True)
     def validate_email(self, key, email: str, is_remove):
         patter_set = r"[^!#$%&‘*+–/=?\\^_`.{\\|}~ | ^a-zA-Z]"
@@ -84,7 +98,7 @@ class User(Base):
         compile_for_invalid_char = re.search(
             patter_set, f"{local_part}{domain}")
 
-        if compile_for_invalid_char:
+        if not compile_for_invalid_char:
             raise ValueError(
                 f"Invalid email address contain any of "
                 f"prohibited char {compile_for_invalid_char.groups()}"

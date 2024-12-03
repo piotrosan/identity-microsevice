@@ -16,11 +16,11 @@ from inrastructure.jwt.token_mixins import (
 
 @dataclass
 class AbstractToken(ABC):
-    exp: datetime | None
-    iss: str | None
-    at_hash: str | None
-    token_type: str
-    user_identifier: str
+    exp: datetime | None = None
+    iss: str | None = None
+    at_hash: str | None = None
+    token_type: str | None = None
+    user_identifier: str | None = None
 
     @classmethod
     @abc.abstractmethod
@@ -36,13 +36,12 @@ class AbstractToken(ABC):
     def validate(self, token: str) -> bool:
         raise NotImplemented
 
-    @classmethod
-    @abc.abstractmethod
-    def from_str(cls, token: str) -> "AbstractToken":
-        raise NotImplemented
+    # @classmethod
+    # @abc.abstractmethod
+    # def from_str(cls, token: str) -> "AbstractToken":
+    #     raise NotImplemented
 
 
-@dataclass
 class Token(
     TokenEncoderMixin,
     TokenDecoderMixin,
@@ -51,8 +50,8 @@ class Token(
 ):
     NOT_COPY_TO_HASH = ("exp", "token_type")
 
-    def _set_iss(self):
-        self.iss = os.getenv('token_iss')
+    def set_iss(self, iss):
+        self.iss = iss
 
     def set_user_data(self, user_data: dict):
         self.__dict__.update(user_data)
@@ -80,14 +79,18 @@ class AccessToken(Token):
         self.exp = datetime.now(
             tz=timezone.utc
         ) + timedelta(
-            **{os.getenv('token_exp_time'): os.getenv('token_exp_delta')}
+            **{os.getenv('token_exp_time'): float(os.getenv('token_exp_delta'))}
         )
+    @property
+    def access_token(self) -> str:
+        return self.encode(self._get_dump_payload())
 
-    def get_access_token(self) -> str:
-        self._set_iss()
+
+    def prepare_access_token(self, app: str, user_data: dict):
+        self.set_iss(app)
+        self.set_user_data(user_data)
         self.set_exp()
         self._set_at_hash()
-        return self.encode(self._get_dump_payload())
 
 
 class RefreshToken(Token):

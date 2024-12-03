@@ -33,8 +33,8 @@ async def register(
     user_api = UserService()
     try:
         return await user_api.register(registration_data)
-    except Exception:
-        raise HTTPException(status_code=404, detail="Item not found")
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"Item not found {e}")
 
 
 # @router.post("/login", response_model=UserContext)

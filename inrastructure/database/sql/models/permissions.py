@@ -31,8 +31,9 @@ class UserGroup(Base):
     updated_at = Column(DateTime, onupdate=func.now())
 
     users: Mapped[List["AssociationUserUserGroup"]] = relationship(
-        back_populates="user_groups")
+        back_populates="user_group")
 
+    role: Mapped["Role"] = relationship(back_populates="group")
 
 class Role(Base):
     __tablename__ = "user_group_roles"
@@ -45,10 +46,10 @@ class Role(Base):
     )
 
     id = Column(Integer, primary_key=True, autoincrement="auto")
+    user_group_id = Column(Integer, ForeignKey("user_groups.id"))
     app = Column(String(100))
     role = Column(String(100))
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
-    group: Mapped["UserGroup"] = relationship(
-        "UserGroup", back_populates="user_group")
+    group: Mapped["UserGroup"] = relationship(back_populates="role")

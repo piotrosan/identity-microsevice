@@ -17,5 +17,5 @@ class AssociationUserUserGroup(Base):
     group_id: Mapped[int] = mapped_column(
         ForeignKey("user_groups.id"), primary_key=True
     )
-    users: Mapped["User"] = relationship(UserGroup)
-    user_groups: Mapped["UserGroup"] = relationship(User)
+    user: Mapped["User"] = relationship(User, back_populates="user_groups")
+    user_group: Mapped["UserGroup"] = relationship(UserGroup, back_populates="users")

@@ -46,29 +46,30 @@ class TokenDecoderMixin(TokenMethodBase):
 
 
 class TokenValidatorMixin(TokenMethodBase):
-    decoded_token = None
 
-    def custom_validate(self, app):
-        tmp_decoded_token_payload = self.decoded_token.copy()
+    @classmethod
+    def _custom_validate(cls, app, decoded_token_payload):
+        tmp_decoded_token_payload = decoded_token_payload
 
         del tmp_decoded_token_payload["exp"]
+        del tmp_decoded_token_payload["token_type"]
 
         at_hash = tmp_decoded_token_payload.pop("at_hash")
-        if at_hash != create_hash(tmp_decoded_token_payload, self.ALGORITHM):
+        if at_hash != create_hash(tmp_decoded_token_payload, cls.ALGORITHM):
             logger.error("Token stamp is incorrect")
             raise DifferentTokenHash("Mismatch token hash")
 
-        if app not in self.decoded_token["aud"]:
+        if app not in decoded_token_payload["apps"]:
             logger.error("Requested application doesnt fit to token")
             raise TokenAudience("User have not access to app")
 
-    def validate(self, token, app) -> bool:
+    @classmethod
+    def validate(cls, token, app) -> bool:
         if not (
-            hasattr(self, "decode")
-            and callable(getattr(self, "decode"))
+            hasattr(cls, "decode")
+            and callable(getattr(cls, "decode"))
         ):
             raise NotImplemented("Implement decode method")
 
-        self.decoded_token = self.decode(token)
-        self.custom_validate(app)
+        cls._custom_validate(app, cls.decode(token))
         return True

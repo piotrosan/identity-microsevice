@@ -32,7 +32,7 @@ dictConfig({
     "loggers" : {
         "root": {
             "handlers": ["std_handler", "fluentd_handler"],
-            "level": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+            "level": ["DEBUG"],
             "propagate": True
             }
         }

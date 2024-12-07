@@ -2,6 +2,7 @@ import logging
 import os
 import json
 from _datetime import datetime, timezone, timedelta
+from typing import Tuple
 from uuid import UUID
 
 import jwt
@@ -64,12 +65,13 @@ class TokenValidatorMixin(TokenMethodBase):
             raise TokenAudience("User have not access to app")
 
     @classmethod
-    def validate(cls, token, app) -> bool:
+    def validate(cls, token, app) -> Tuple[bool, dict]:
         if not (
             hasattr(cls, "decode")
             and callable(getattr(cls, "decode"))
         ):
             raise NotImplemented("Implement decode method")
 
-        cls._custom_validate(app, cls.decode(token))
-        return True
+        decoded: dict = cls.decode(token)
+        cls._custom_validate(app, decoded)
+        return True, decoded["payload"]

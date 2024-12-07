@@ -1,3 +1,4 @@
+from typing import List
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -14,3 +15,9 @@ class ResponseUserData(BaseModel):
 class UserContext(BaseModel):
     refresh_token: str | None = None
     token: str
+
+
+class DetailUserContext(BaseModel):
+    user_groups: List[str]
+    user_roles: List[str]
+    user_hash: UUID

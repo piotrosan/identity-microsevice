@@ -9,6 +9,7 @@ from . import session
 from sqlalchemy import Select, Update, select, Row, and_, text, String
 from sqlalchemy import exc
 import inrastructure.database.sql as reload_session
+from .models import UserGroup, Role
 from .models.user import User, ExternalLogin
 
 logger = logging.getLogger("root")
@@ -83,6 +84,14 @@ class IdentityUserDBAPI:
             )
         )
 
+    def _select_all_data_user_from_hash(self, user_hash: UUID):
+        return select(User, ExternalLogin, UserGroup, Role).where(
+            cast(
+                "ColumnElement[bool]",
+                User.hash_identifier == str(user_hash)
+            )
+        )
+
     def query_all_users_with_external_login_generator(
             self,
             column: List[str] = None,
@@ -137,3 +146,15 @@ class IdentityUserDBAPI:
                 f"custom select statement -> {e}"
             )
             raise ValueError("Can not select user")
+
+    def get_all_context_for_user(
+            self,
+            user_hash: UUID
+    ) -> Row[Any]:
+        try:
+            return self.db.query_statement(
+                self._select_all_data_user_from_hash(user_hash)
+            )
+        except exc.SQLAlchemyError as e:
+            logger.critical("Problem wile select all users")
+            raise ValueError(f"Can not select user {e}")

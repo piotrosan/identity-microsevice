@@ -24,7 +24,7 @@ command = RegisterUserCommandFactory
 
 @router.post(
     "/register",
-    response_model=Union[UserContext]
+    response_model=UserContext
 )
 async def register(
         registration_data: Annotated[
@@ -44,18 +44,20 @@ async def register(
 #     return UserContext(**user_context)
 #
 #
-# @router.post("/token-verify", response_model=UserContext)
-# async def token_verify(
-#         verification_data: Annotated[VerificationData, Body(embed=True)]
-# ):
-#     return  Auth.token_verify(verification_data)
-#
-#
-# @router.post("/refresh-verify", response_model=UserContext)
-# async def refresh_token(
-#         verification_data: Annotated[VerificationData, Body(embed=True)]
-# ):
-#     return Auth.refresh_token(verification_data)
+@router.post("/token-verify", response_model=UserContext)
+async def token_verify(
+        verification_data: Annotated[VerificationData, Body(embed=True)]
+) -> Any :
+    validate, payload = Auth.token_verify(verification_data)
+    if validate:
+        return
+
+
+@router.post("/refresh-verify", response_model=UserContext)
+async def refresh_token(
+        verification_data: Annotated[VerificationData, Body(embed=True)]
+):
+    return Auth.refresh_token(verification_data)
 
 
 # @router.put(

@@ -14,7 +14,9 @@ from inrastructure.database.sql.user_database_api import (
 )
 from inrastructure.jwt.token import AccessToken, RefreshToken
 from inrastructure.routers.request_models.request_user import RegistrationData
-from inrastructure.routers.response_model.response_register import UserContext
+from inrastructure.routers.response_model.response_register import UserContext, \
+    DetailUserContext
+
 
 class UserService:
 
@@ -54,9 +56,10 @@ class UserService:
         body = render_template(template_root, activation_template, data)
         await send_mail("Activate user", body, [email])
 
-    def get_user_data(self, user_hash: UUID) -> User:
-        # ToDo check what i must return
-        return self.uda.query_user_generator(user_hash)
+    def get_get_user_detail(self, user_hash: UUID) -> DetailUserContext:
+        user_combo_data = self.uda.get_all_context_for_user(user_hash)
+        # ToDO after fill all data
+        return DetailUserContext(user_groups=['test'], user_roles=['test_role'])
 
     def list_users(self):
         pass

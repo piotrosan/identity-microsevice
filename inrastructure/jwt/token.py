@@ -4,6 +4,7 @@ import os
 from abc import ABC
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
+from os import access
 from typing import Literal, List
 from uuid import UUID
 
@@ -43,14 +44,10 @@ class AbstractToken(ABC):
     def decode(cls, token: str) -> dict :
         raise NotImplemented
 
+    @classmethod
     @abc.abstractmethod
-    def validate(self, token: str) -> bool:
+    def validate(cls, token: str) -> bool:
         raise NotImplemented
-
-    # @classmethod
-    # @abc.abstractmethod
-    # def from_str(cls, token: str) -> "AbstractToken":
-    #     raise NotImplemented
 
 
 class Token(
@@ -118,7 +115,7 @@ class RefreshToken(Token):
         )
 
     @property
-    def refresh_token(self):
+    def refresh_token(self) -> str:
         return self.encode(self._get_dump_payload())
 
     @classmethod
@@ -127,9 +124,14 @@ class RefreshToken(Token):
             k: v for k, v in cls.decode(refresh_token)
             if k not in cls.NOT_COPY_FROM_REFRESH
         })
-        access.set_exp()
         return access
 
+    @classmethod
+    def recreate(cls, refresh_token: str) -> "RefreshToken":
+        refresh = cls(**{
+            k: v for k, v in cls.decode(refresh_token)
+        })
+        return refresh
 
 class TokenFactory:
 
@@ -143,10 +145,23 @@ class TokenFactory:
         return access
 
     @classmethod
-    def create_refresh_token(cls, data) -> RefreshToken:
+    def create_refresh_token(cls, data: dict) -> RefreshToken:
         refresh = RefreshToken()
         refresh.set_user_data(data["user_data"])
         refresh.set_exp()
         refresh.set_iss()
         refresh.set_at_hash()
         return refresh
+
+    @classmethod
+    def recreate_refresh_token(cls, refresh_token_old: str) -> RefreshToken:
+        refresh_token = RefreshToken.recreate(refresh_token_old)
+        refresh_token.set_exp()
+        return refresh_token
+
+
+    @classmethod
+    def access_token_from_refresh_token(cls, token: str) -> AccessToken:
+        access_token = RefreshToken.access_token(token)
+        access_token.set_exp()
+        return access_token

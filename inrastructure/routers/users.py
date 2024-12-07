@@ -22,6 +22,12 @@ router = APIRouter(
 #     return {}
 #
 #
-# @router.put("/{user_id}", response_model=ResponseUserData)
-# async def modify_user(user_data: RequestUser, user_id: str):
-#     return {}
+
+@router.put("/{user_id}", response_model=ResponseUserData)
+async def modify_user(user_data: RequestUser, user_id: str):
+    return {}
+
+
+
+
+

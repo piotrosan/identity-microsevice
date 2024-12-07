@@ -21,3 +21,7 @@ class DetailUserContext(BaseModel):
     user_groups: List[str]
     user_roles: List[str]
     user_hash: UUID
+
+
+class PermissionResponseData:
+    pass

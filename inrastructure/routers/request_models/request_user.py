@@ -23,3 +23,10 @@ class RegistrationData(BaseModel):
 class VerificationData:
     user_context: UserContext
     app: str
+
+
+class PermissionRequestData:
+    pass
+
+
+

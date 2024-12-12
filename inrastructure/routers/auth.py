@@ -1,9 +1,7 @@
 from typing import Dict, Annotated, Union, Any
 
-import requests
-import starlette
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi import Body
 
 from domain.auth import Auth
@@ -12,7 +10,6 @@ from .request_models.request_user import RequestUser, RegistrationData, \
     VerificationData
 from domain.user_service import UserService
 from .response_model.response_register import UserContext
-from ..jwt.token import AccessToken, RefreshToken
 
 router = APIRouter(
     prefix="/auth",
@@ -28,36 +25,36 @@ command = RegisterUserCommandFactory
 )
 async def register(
         registration_data: Annotated[
-            RegistrationData, Body(embed=True)]
+            RegistrationData, Body(...)]
 ) -> Any:
     user_api = UserService()
-    try:
-        return await user_api.register(registration_data)
-    except Exception as e:
-        raise HTTPException(status_code=404, detail=f"Item not found {e}")
+    return await user_api.register(registration_data)
 
 
-# @router.post("/login", response_model=UserContext)
-# async def login(user_data: RequestUser):
-#     l = command.from_request_data(user_data)
-#     user_context = l()
-#     return UserContext(**user_context)
-#
-#
+@router.post("/login", response_model=UserContext)
+async def login(user_data: Annotated[RequestUser, Body(embed=True)]):
+    login_command = command.from_request_data(user_data)
+    user_context = login_command()
+    return UserContext(**user_context)
+
+
 @router.post("/token-verify", response_model=UserContext)
 async def token_verify(
         verification_data: Annotated[VerificationData, Body(embed=True)]
 ) -> Any :
     validate, payload = Auth.token_verify(verification_data)
-    if validate:
-        return
+    return UserContext(
+        validate=validate,
+        hash_identifier=payload["hash_identifier"]
+    )
 
 
-@router.post("/refresh-verify", response_model=UserContext)
-async def refresh_token(
-        verification_data: Annotated[VerificationData, Body(embed=True)]
-):
-    return Auth.refresh_token(verification_data)
+
+# @router.post("/refresh-verify", response_model=UserContext)
+# async def refresh_token(
+#         verification_data: Annotated[VerificationData, Body(embed=True)]
+# ):
+#     return Auth.refresh_token(verification_data)
 
 
 # @router.put(

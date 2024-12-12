@@ -71,7 +71,11 @@ class TokenValidatorMixin(TokenMethodBase):
             and callable(getattr(cls, "decode"))
         ):
             raise NotImplemented("Implement decode method")
-
-        decoded: dict = cls.decode(token)
-        cls._custom_validate(app, decoded)
-        return True, decoded["payload"]
+        try:
+            decoded: dict = cls.decode(token)
+            cls._custom_validate(app, decoded)
+            return True, decoded["payload"]
+        except TokenAudience as e:
+            pass
+        except DifferentTokenHash as e:
+            pass

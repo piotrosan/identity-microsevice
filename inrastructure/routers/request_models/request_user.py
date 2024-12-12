@@ -20,7 +20,7 @@ class RegistrationData(BaseModel):
     external_login_data: LoginRequest
 
 
-class VerificationData:
+class VerificationData(BaseModel):
     user_context: UserContext
     app: str
 

@@ -85,12 +85,17 @@ class IdentityUserDBAPI:
         )
 
     def _select_all_data_user_from_hash(self, user_hash: UUID):
-        return select(User, ExternalLogin, UserGroup, Role).where(
-            cast(
-                "ColumnElement[bool]",
-                User.hash_identifier == str(user_hash)
+        try:
+            return select(User, ExternalLogin, UserGroup, Role).where(
+                cast(
+                    "ColumnElement[bool]",
+                    User.hash_identifier == str(user_hash)
+                )
             )
-        )
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                f"Problem wile select user from hash identifier {e}")
+            raise ValueError("Can not select users")
 
     def query_all_users_with_external_login_generator(
             self,

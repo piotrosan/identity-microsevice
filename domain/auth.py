@@ -1,11 +1,11 @@
 from typing import Tuple
 
 from domain.http_exception_auth import TokenHttpException
-from inrastructure.jwt.exceptions import DifferentTokenHash, TokenAudience
-from inrastructure.jwt.token import Token, RefreshToken, TokenFactory, \
+from inrastructure.security.jwt.exceptions import DifferentTokenHashException, TokenAudienceException
+from inrastructure.security.jwt.token import Token, RefreshToken, TokenFactory, \
     AccessToken
 from inrastructure.routers.request_models.request_user import (
-    RequestUser, LoginRequest, VerificationData
+    VerificationData
 )
 
 from inrastructure.routers.response_model.response_register import UserContext
@@ -15,17 +15,10 @@ class Auth:
 
     @classmethod
     def token_verify(cls, verification_data: VerificationData) -> Tuple[bool, dict]:
-        try:
-            return Token.validate(
-                verification_data.user_context.token,
-                verification_data.app
-            )
-        except DifferentTokenHash as e:
-            raise TokenHttpException(detail=str(e), status_code=400)
-        except TokenAudience as e:
-            raise TokenHttpException(detail=str(e), status_code=400)
-        except ValueError as e:
-            raise TokenHttpException(detail=str(e), status_code=400)
+        return Token.validate(
+            verification_data.user_context.token,
+            verification_data.app
+        )
 
     @classmethod
     def refresh_token(cls, verification_data: VerificationData) -> UserContext:

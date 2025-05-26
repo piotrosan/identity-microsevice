@@ -21,7 +21,7 @@ class RegistrationData(BaseModel):
 
 
 class VerificationData(BaseModel):
-    user_context: UserContext
+    token: str
     app: str
 
 

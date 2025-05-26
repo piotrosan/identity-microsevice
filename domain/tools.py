@@ -1,8 +1,5 @@
-import uuid
 from typing import List
-from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
-from inrastructure.jwt.token import AccessToken
-from inrastructure.settings.context_app import settings
+from fastapi_mail import FastMail, MessageSchema, MessageType
 from inrastructure.settings.mail import conf
 
 from pydantic import EmailStr

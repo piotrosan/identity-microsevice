@@ -45,7 +45,7 @@ async def token_verify(
     validate, payload = Auth.token_verify(verification_data)
     return UserContext(
         validate=validate,
-        hash_identifier=payload["hash_identifier"]
+        payload=payload
     )
 
 

@@ -4,12 +4,11 @@ import os
 from abc import ABC
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
-from os import access
 from typing import Literal, List
 from uuid import UUID
 
-from inrastructure.jwt.helpers import create_hash
-from inrastructure.jwt.token_mixins import (
+from inrastructure.security.jwt.helpers import create_hash
+from inrastructure.security.jwt.token_mixins import (
     TokenValidatorMixin,
     TokenEncoderMixin,
     TokenDecoderMixin

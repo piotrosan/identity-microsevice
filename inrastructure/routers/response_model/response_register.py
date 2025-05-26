@@ -15,7 +15,7 @@ class ResponseUserData(BaseModel):
 class UserContext(BaseModel):
     refresh_token: str | None = None
     token: str | None = None
-    hash_identifier: str | None = None
+    payload: dict | None = None
     validate: bool | None = None
 
 

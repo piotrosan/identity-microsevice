@@ -1,9 +1,4 @@
 from uuid import UUID
-import logging
-import jwt
-from typing import Any, List, Iterable
-
-from sqlalchemy import Result
 
 from domain.http_exception_auth import TokenHttpException
 from domain.http_exception_user import UserHttpException
@@ -14,8 +9,8 @@ from inrastructure.database.sql.user_database_api import (
     UserDatabaseAPI,
     IdentityUserDBAPI,
 )
-from inrastructure.jwt.exceptions import DifferentTokenHash, TokenAudience
-from inrastructure.jwt.token import AccessToken, RefreshToken, TokenFactory
+from inrastructure.security.jwt.exceptions import DifferentTokenHashException, TokenAudienceException
+from inrastructure.security.jwt.token import TokenFactory
 from inrastructure.routers.request_models.request_user import RegistrationData
 from inrastructure.routers.response_model.response_register import UserContext, \
     DetailUserContext
@@ -57,9 +52,9 @@ class UserService:
             })
             access_token_encoded = access_token.access_token
             refresh_token_encoded = refresh_token.refresh_token
-        except DifferentTokenHash as e:
+        except DifferentTokenHashException as e:
             raise TokenHttpException(detail=str(e), status_code=400)
-        except TokenAudience as e:
+        except TokenAudienceException as e:
             raise TokenHttpException(detail=str(e), status_code=400)
         except ValueError as e:
             raise TokenHttpException(detail=str(e), status_code=400)

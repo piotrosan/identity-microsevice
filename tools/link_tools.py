@@ -1,11 +1,10 @@
 import logging
 
 from collections import namedtuple
-from typing import List
-from urllib.parse import urljoin, urlencode, urlparse, urlunparse, unquote
+from urllib.parse import urlencode, urlunparse, unquote
 
 from inrastructure.database.sql.models import User
-from inrastructure.jwt.token import TokenFactory
+from inrastructure.security.jwt.token import TokenFactory
 
 logger = logging.getLogger("root")
 

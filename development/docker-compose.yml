@@ -4,14 +4,7 @@ services:
     container_name: db
     image: postgres
     restart: always
-    # set shared memory limit when using docker-compose
     shm_size: 128mb
-    # or set shared memory limit when deploy via swarm stack
-    #volumes:
-    #  - type: tmpfs
-    #    target: /dev/shm
-    #    tmpfs:
-    #      size: 134217728 # 128*2^20 bytes = 128Mb
     ports:
       - 5432:5432
     environment:
@@ -41,52 +34,6 @@ services:
     # command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes:
       - cache:/data
-
-#  web:
-#    image: httpd
-#    ports:
-#      - "80:80"
-#    depends_on:
-#      - fluentd
-#      - elasticsearch
-#    links:
-#      - fluentd
-#    logging:
-#      driver: "fluentd"
-#      options:
-#        fluentd-address: localhost:24224
-#        tag: httpd.access
-#
-#  fluentd:
-#    build: ./fluentd
-#    volumes:
-#      - ./fluentd/conf:/fluentd/etc
-#    links:
-#      - "elasticsearch"
-#    depends_on:
-#      - elasticsearch
-#    ports:
-#      - "24224:24224"
-#      - "24224:24224/udp"
-#
-#  elasticsearch:
-#    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
-#    container_name: elasticsearch
-#    environment:
-#      - "discovery.type=single-node"
-#    expose:
-#      - "9200"
-#    ports:
-#      - "9200:9200"
-#
-#  kibana:
-#    image: docker.elastic.co/kibana/kibana:7.13.1
-#    depends_on:
-#      - elasticsearch
-#    links:
-#      - "elasticsearch"
-#    ports:
-#      - "5601:5601"
 
 volumes:
   db:

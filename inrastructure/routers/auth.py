@@ -10,6 +10,7 @@ from .request_models.request_user import RequestUser, RegistrationData, \
     VerificationData
 from domain.user_service import UserService
 from .response_model.response_register import UserContext
+from ..security.jwt.token import AccessToken
 
 router = APIRouter(
     prefix="/auth",
@@ -32,15 +33,19 @@ async def register(
 
 
 @router.post("/login", response_model=UserContext)
-async def login(user_data: Annotated[RequestUser, Body(embed=True)]):
+def login(
+        user_data: Annotated[
+            RequestUser, Body(embed=True)]
+) -> Any:
     login_command = command.from_request_data(user_data)
-    user_context = login_command()
-    return UserContext(**user_context)
+    token: AccessToken = login_command()
+    return UserContext(**{'token': token.access_token})
 
 
 @router.post("/token-verify", response_model=UserContext)
-async def token_verify(
-        verification_data: Annotated[VerificationData, Body(embed=True)]
+def token_verify(
+        verification_data: Annotated[
+            VerificationData, Body(embed=True)]
 ) -> Any :
     validate, payload = Auth.token_verify(verification_data)
     return UserContext(
@@ -49,12 +54,17 @@ async def token_verify(
     )
 
 
+@router.post("/refresh-token", response_model=UserContext)
+def refresh_token(
+        verification_data: Annotated[
+            VerificationData, Body(embed=True)]
+):
+    token, refresh_token = Auth.refresh_token(verification_data)
+    return UserContext(
+        token=token.access_token,
+        refresh_token=refresh_token.refresh_token
+    )
 
-# @router.post("/refresh-verify", response_model=UserContext)
-# async def refresh_token(
-#         verification_data: Annotated[VerificationData, Body(embed=True)]
-# ):
-#     return Auth.refresh_token(verification_data)
 
 
 # @router.put(

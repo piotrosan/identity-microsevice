@@ -8,3 +8,7 @@ class RegisterHttpException(HTTPException):
 class TokenHttpException(HTTPException):
     status_code = 400
     detail = "Invalid token"
+
+class LoginHttpException(HTTPException):
+    status_code = 400
+    detail = "Set command object in login class"

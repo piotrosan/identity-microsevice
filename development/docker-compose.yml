@@ -1,20 +1,19 @@
-version: '3.9'
 services:
-  db:
-    container_name: db
+  db_identity:
+    container_name: db_identity
     image: postgres
     restart: always
     shm_size: 128mb
     ports:
-      - 5432:5432
+      - 5434:5434
     environment:
       POSTGRES_PASSWORD: example
-      POSTGRES_DB: identity_user
+      POSTGRES_DB: identity
       PGDATA: /data/postgres
     volumes:
-      - db:/data/postgres
+      - db_identity:/data/postgres
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres -d culture" ]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d identity" ]
       interval: 10s
       retries: 5
       start_period: 30s
@@ -35,7 +34,12 @@ services:
     volumes:
       - cache:/data
 
+#  app:
+#    networks:
+#      - flash_card
+#
+
 volumes:
-  db:
+  db_identity:
   cache:
     driver: local

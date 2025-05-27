@@ -1,8 +1,5 @@
 from pydantic import BaseModel
 
-from inrastructure.routers.response_model.response_register import UserContext
-
-
 class RequestUser(BaseModel):
     email: str
     password: str | None = None

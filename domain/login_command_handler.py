@@ -1,23 +1,25 @@
+from domain.http_exception_auth import LoginHttpException
 from inrastructure.routers.request_models.request_user import RequestUser, \
     LoginRequest
 from inrastructure.validators.user_data_validator import UserDataValidator
+from inrastructure.security.jwt.token import TokenFactory, AccessToken
 
 
 class Login:
     command = None
 
-    def __init__(self, command: LoginRequest):
+    def __init__(self, command: RequestUser):
         self.command = command
 
-    def _login(self) -> dict:
-        pass
+    def _login(self) -> AccessToken:
+        if not self.command:
+            raise LoginHttpException(status_code=400)
+        return TokenFactory.create_access_token(
+            self.command.model_dump()
+        )
 
-    def __call__(self) -> dict:
-        try:
-            return self._login()
-        except Exception as e:
-            #ToDo log
-            pass
+    def __call__(self) -> AccessToken:
+        return self._login()
 
 class RegisterUserCommandFactory:
     user_data_validator = UserDataValidator

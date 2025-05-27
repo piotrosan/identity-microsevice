@@ -21,14 +21,10 @@ class Auth:
         )
 
     @classmethod
-    def refresh_token(cls, verification_data: VerificationData) -> UserContext:
+    def refresh_token(cls, verification_data: VerificationData) -> Tuple[
+        AccessToken, RefreshToken]:
         token: AccessToken = TokenFactory.access_token_from_refresh_token(
-            verification_data.user_context.refresh_token)
+            verification_data.token)
         refresh_token: RefreshToken = TokenFactory.recreate_refresh_token(
             verification_data.user_context.refresh_token)
-
-        user_context = UserContext(
-            token=token.access_token,
-            refresh_token=refresh_token.refresh_token
-        )
-        return user_context
+        return token, refresh_token

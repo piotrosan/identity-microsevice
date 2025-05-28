@@ -8,8 +8,9 @@ from domain.auth import Auth
 from domain.login_command_handler import RegisterUserCommandFactory
 from .request_models.request_user import RequestUser, RegistrationData, \
     VerificationData
-from domain.user_service import UserService
+from domain.user.service import UserService
 from .response_model.response_register import UserContext
+from ..database.sql.user_database_api import IdentityUserDBAPI
 from ..security.jwt.token import AccessToken
 
 router = APIRouter(
@@ -28,7 +29,8 @@ async def register(
         registration_data: Annotated[
             RegistrationData, Body(...)]
 ) -> Any:
-    user_api = UserService()
+    infrastructure_db = IdentityUserDBAPI()
+    user_api = UserService(infrastructure_db)
     return await user_api.register(registration_data)
 
 

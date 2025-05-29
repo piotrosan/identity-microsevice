@@ -9,7 +9,7 @@ from inrastructure.database.sql.api.user import IdentityUserDBAPI
 from inrastructure.routers.request_models.request_user import RegistrationData
 from inrastructure.security.jwt.token import TokenFactory
 from inrastructure.settings.context_app import settings
-from tools.link_tools import generate_activation_link
+from inrastructure.mail.link_tools import generate_activation_link
 
 
 class UserService(Service):

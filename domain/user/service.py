@@ -1,11 +1,11 @@
-from typing import Iterable, Tuple
+from typing import Tuple
 from uuid import UUID
 
-from domain.mail import render_template
-from domain.tools import send_mail
+from inrastructure.mail.mail import render_template
+from inrastructure.mail.tools import send_mail
 from domain.user.base_service import Service
 from inrastructure.database.sql.models import User
-from inrastructure.database.sql.user_database_api import IdentityUserDBAPI
+from inrastructure.database.sql.api.user import IdentityUserDBAPI
 from inrastructure.routers.request_models.request_user import RegistrationData
 from inrastructure.security.jwt.token import TokenFactory
 from inrastructure.settings.context_app import settings

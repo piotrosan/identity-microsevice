@@ -5,13 +5,13 @@ from uuid import UUID
 
 from typing_extensions import Any
 
-from . import session
+from inrastructure.database.sql import session
 from sqlalchemy import Select, Update, select, Row, and_, text, String
 from sqlalchemy import exc
 import inrastructure.database.sql as reload_session
-from .exception.http_exception_user import HttpUserDBException
-from .models import UserGroup, Role
-from .models.user import User, ExternalLogin
+from inrastructure.database.sql.exception.http_exception_user import HttpUserDBException
+from inrastructure.database.sql.models import UserGroup, Role
+from inrastructure.database.sql.models.user import User, ExternalLogin
 
 logger = logging.getLogger("root")
 

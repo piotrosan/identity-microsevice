@@ -1,6 +1,5 @@
-from domain.http_exception_auth import LoginHttpException
-from inrastructure.routers.request_models.request_user import RequestUser, \
-    LoginRequest
+from domain.exception.http_exception_auth import LoginHttpException
+from inrastructure.routers.request_models.request_user import RequestUser
 from inrastructure.validators.user_data_validator import UserDataValidator
 from inrastructure.security.jwt.token import TokenFactory, AccessToken
 

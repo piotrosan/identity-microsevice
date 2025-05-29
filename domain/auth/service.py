@@ -1,17 +1,13 @@
 from typing import Tuple
 
-from domain.http_exception_auth import TokenHttpException
-from inrastructure.security.jwt.exceptions import DifferentTokenHashException, TokenAudienceException
 from inrastructure.security.jwt.token import Token, RefreshToken, TokenFactory, \
     AccessToken
 from inrastructure.routers.request_models.request_user import (
     VerificationData
 )
 
-from inrastructure.routers.response_model.response_register import UserContext
 
-
-class Auth:
+class AuthService:
 
     @classmethod
     def token_verify(cls, verification_data: VerificationData) -> Tuple[bool, dict]:

@@ -1,16 +1,16 @@
-from typing import Dict, Annotated, Union, Any
+from typing import Annotated, Any
 
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from fastapi import Body
 
-from domain.auth import Auth
-from domain.login_command_handler import RegisterUserCommandFactory
+from domain.auth.service import AuthService
+from domain.auth.login_command import RegisterUserCommandFactory
 from .request_models.request_user import RequestUser, RegistrationData, \
     VerificationData
 from domain.user.service import UserService
 from .response_model.response_register import UserContext
-from ..database.sql.user_database_api import IdentityUserDBAPI
+from inrastructure.database.sql.api.user import IdentityUserDBAPI
 from ..security.jwt.token import AccessToken
 
 router = APIRouter(
@@ -49,7 +49,7 @@ def token_verify(
         verification_data: Annotated[
             VerificationData, Body(embed=True)]
 ) -> Any :
-    validate, payload = Auth.token_verify(verification_data)
+    validate, payload = AuthService.token_verify(verification_data)
     return UserContext(
         validate=validate,
         payload=payload
@@ -61,7 +61,7 @@ def refresh_token(
         verification_data: Annotated[
             VerificationData, Body(embed=True)]
 ):
-    token, refresh_token = Auth.refresh_token(verification_data)
+    token, refresh_token = AuthService.refresh_token(verification_data)
     return UserContext(
         token=token.access_token,
         refresh_token=refresh_token.refresh_token

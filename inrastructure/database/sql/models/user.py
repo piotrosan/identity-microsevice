@@ -56,9 +56,6 @@ class User(Base):
     user_groups: Mapped[List["AssociationUserUserGroup"]] = relationship(
         back_populates="user")
 
-    # user: Mapped[List["Session"]] = relationship(
-    #     "Session", back_populates="users")
-
     def set_password(self, password):
         self.password = bcrypt.hashpw(password, bcrypt.gensalt())
 

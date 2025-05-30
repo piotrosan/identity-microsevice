@@ -7,7 +7,8 @@ from domain.user.base_service import Service
 from inrastructure.database.sql.models import User
 from inrastructure.database.sql.api.user import IdentityUserDBAPI
 from inrastructure.routers.request_models.request_user import RegistrationData
-from inrastructure.security.jwt.token import TokenFactory
+from inrastructure.security.jwt.token import TokenFactory, AccessToken, \
+    RefreshToken
 from inrastructure.settings.context_app import settings
 from inrastructure.mail.link_tools import generate_activation_link
 
@@ -16,7 +17,7 @@ class UserService(Service):
 
     model = User
 
-    def __init___(self, infrastructure_db: IdentityUserDBAPI):
+    def __init__(self, infrastructure_db: IdentityUserDBAPI):
         self.infrastructure_db = infrastructure_db
         super().__init__()
 
@@ -32,7 +33,7 @@ class UserService(Service):
     async def register(
             self,
             registration_data: RegistrationData
-    ) -> Tuple[str, str, str]:
+    ) -> Tuple[AccessToken, RefreshToken, User]:
         user = self.add_user(registration_data)
         access_token = TokenFactory.create_access_token({
             "user_data": {
@@ -44,11 +45,8 @@ class UserService(Service):
                 "user_identifier": user.hash_identifier
             }
         })
-        access_token = access_token.access_token
-        refresh_token= refresh_token.refresh_token
-
         await self._send_activation_link(user)
-        return access_token, refresh_token, user.hash_identifier
+        return access_token, refresh_token, user
 
 
     async def _send_activation_link(self, user: User):
@@ -68,4 +66,7 @@ class UserService(Service):
         return user_combo_data
 
     def list_users(self):
+        pass
+
+    def get_all_context_data_for_user(self):
         pass

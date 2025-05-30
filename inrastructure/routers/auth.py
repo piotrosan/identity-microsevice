@@ -1,4 +1,4 @@
-from typing import Annotated, Any
+from typing import Annotated, Any, Tuple
 
 from fastapi import APIRouter
 from fastapi import Body
@@ -10,7 +10,9 @@ from .request_models.request_user import RequestUser, RegistrationData, \
 from domain.user.service import UserService
 from .response_model.response_register import UserContext
 from inrastructure.database.sql.api.user import IdentityUserDBAPI
-from ..security.jwt.token import AccessToken
+from ..cache.api.cache import RedisCache
+from ..database.sql.models import User
+from ..security.jwt.token import AccessToken, RefreshToken
 
 router = APIRouter(
     prefix="/auth",
@@ -26,13 +28,16 @@ command = RegisterUserCommandFactory
 )
 async def register(
         registration_data: Annotated[
-            RegistrationData, Body(...)]
+            RegistrationData, Body(...)
+        ]
 ) -> Any:
-    infrastructure_db = IdentityUserDBAPI()
-    user_api = UserService(infrastructure_db)
-    return await user_api.register(registration_data)
-
-
+    api_db = IdentityUserDBAPI()
+    user_api = UserService(api_db)
+    all_user_context: Tuple[AccessToken, RefreshToken, User] = await user_api.register(
+        registration_data
+    )
+    cache_context = RedisCache()
+    cache_context.set_context(all_user_context)
 @router.post("/login", response_model=UserContext)
 def login(
         user_data: Annotated[

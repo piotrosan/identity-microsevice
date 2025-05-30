@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from inrastructure.routers import auth, users
 from inrastructure.settings.context_app import Settings, settings
@@ -5,9 +7,13 @@ from inrastructure.settings.context_app import Settings, settings
 app = FastAPI()
 
 
-@app.on_event("startup")
-async def startup_event():
-    pass
+@asynccontextmanager
+async def set_context():
+
+    try:
+        yield conn
+    finally:
+        await release_db_connection(conn)
 
 @app.middleware("http")
 async def set_base_url(request: Request, call_next):

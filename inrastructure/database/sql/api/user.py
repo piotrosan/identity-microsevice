@@ -1,6 +1,6 @@
 import logging
 from importlib import reload
-from typing import Sequence, Iterable, List, cast
+from typing import Sequence, Iterable, List, cast, Tuple
 from uuid import UUID
 
 from typing_extensions import Any
@@ -58,7 +58,7 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
                 status_code=400
             )
 
-    def _select_all_user(
+    def _select_all_user_sql(
             self,
             column: List[str] = None,
             order: List[str] = None
@@ -77,7 +77,7 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
 
         return tmp_select
 
-    def _select_user_from_hash(self, user_hash: UUID):
+    def _select_user_from_hash_sql(self, user_hash: UUID):
         try:
             return select(User).where(
                 cast(
@@ -93,7 +93,7 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
                 status_code=400
             )
 
-    def _select_all_data_user_from_hash(self, user_hash: UUID):
+    def _select_all_data_user_from_hash_sql(self, user_hash: UUID):
         try:
             return select(User, ExternalLogin, UserGroup, Role).where(
                 cast(
@@ -116,7 +116,7 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
     ) -> Row[Any]:
         try:
             return self.query_statement(
-                self._select_all_user(column, order)
+                self._select_all_user_sql(column, order)
             )
         except exc.SQLAlchemyError as e:
             logger.critical("Problem wile select all users")
@@ -131,7 +131,7 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
     ) -> Row[Any]:
         try:
             return self.query_statement(
-                self._select_user_from_hash(user_hash)
+                self._select_user_from_hash_sql(user_hash)
             )
         except exc.SQLAlchemyError as e:
             logger.critical(f"Problem wile select user {user_hash} -> {e}")
@@ -179,11 +179,12 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
     def get_all_context_for_user(
             self,
             user_hash: UUID
-    ) -> Row[Any]:
+    ) -> List[Tuple[User, ExternalLogin, UserGroup, Role]]:
         try:
             return self.query_statement(
-                self._select_all_data_user_from_hash(user_hash)
-            )
+                self._select_all_data_user_from_hash_sql(
+                    user_hash)
+            ).all()
         except exc.SQLAlchemyError as e:
             logger.critical("Problem wile select all users")
             raise HttpUserDBException(

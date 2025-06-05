@@ -29,31 +29,19 @@ class RedisCache:
 
     def _user_data_dump(
             self,
-            all_context: List[
-                Tuple[
-                    User,
-                    UserPermissions,
-                ]
-            ]
+            user: User
     ) -> Dict[str, Any]:
         result = {}
-        for auc in all_context:
-            user = auc[0]
-            permission = auc[1]
-            result[user.hash_identifier]['permission_conf'] = permission.configuration
-            result[user.hash_identifier]['email'] = user.email
+        permission = user.user_permissions[0]
+        result[user.hash_identifier]['permission_conf'] = permission.configuration
+        result[user.hash_identifier]['email'] = user.email
         return result
 
     def set_context(
             self,
-            all_context: List[
-                Tuple[
-                    User,
-                    UserPermissions,
-                ]
-            ]
+            user: User
     ):
-        user_data = self._user_data_dump(all_context)
+        user_data = self._user_data_dump(user)
         self.redis_server.hset(
             f'context:{user_data["hash_identifier"]}',
             'email',

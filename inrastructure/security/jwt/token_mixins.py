@@ -13,10 +13,11 @@ logger = logging.getLogger("root")
 class TokenMethodBase:
     ALGORITHM = "HS256"
 
-    def generate_hash_for_search(self):
+    @classmethod
+    def generate_hash_for_search(cls):
         import uuid, datetime
         return (f"{uuid.uuid1()} - "
-                f"{datetime.datetime.strptime('%m/%d/%Y, %H:%M:%S')}")
+                f"{datetime.datetime.now().strftime('%m/%d/%Y, %H:%M:%S')}")
 
 class TokenEncoderMixin(TokenMethodBase):
 

@@ -12,6 +12,7 @@ from inrastructure.security.jwt.token import TokenFactory, AccessToken, \
     RefreshToken
 from inrastructure.settings.context_app import settings
 from inrastructure.mail.link_tools import generate_activation_link
+from settings import root_path
 
 
 class UserService(Service):
@@ -37,7 +38,7 @@ class UserService(Service):
             registration_data: RegistrationData
     ) -> Tuple[AccessToken, RefreshToken, User]:
         user = self.add_user(registration_data)
-        import ipdb;ipdb.set_trace()
+
         access_token = TokenFactory.create_access_token({
             "user_data": {
                 "user_identifier": user.hash_identifier
@@ -53,7 +54,7 @@ class UserService(Service):
 
 
     async def _send_activation_link(self, user: User):
-        template_root = "template/"
+        template_root = f"{root_path}/domain/template/"
         activation_template = "activation_link.html"
         data = {
             'activation_link': generate_activation_link(

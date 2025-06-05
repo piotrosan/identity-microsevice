@@ -35,7 +35,7 @@ async def register(
         User
     ] = await user_api.register(registration_data)
     cache_context = RedisCache()
-    cache_context.set_context(all_context)
+    cache_context.set_context(all_context[2])
 
 
 @router.put("/{user_id}", response_model=ResponseUserData)

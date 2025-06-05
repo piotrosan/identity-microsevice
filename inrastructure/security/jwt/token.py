@@ -87,7 +87,10 @@ class AccessToken(Token):
         self.exp = datetime.now(
             tz=timezone.utc
         ) + timedelta(
-            **{os.getenv('token_exp_time'): float(os.getenv('token_exp_delta'))}
+            **{
+                os.getenv('token_exp_time'):
+                    float(os.getenv('token_exp_delta'))
+            }
         )
 
     @property
@@ -109,7 +112,7 @@ class RefreshToken(Token):
         ) + timedelta(
             **{
                 os.getenv('refresh_token_exp_time'):
-                    os.getenv('refresh_token_exp_delta')
+                    float(os.getenv('refresh_token_exp_delta'))
             }
         )
 

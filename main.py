@@ -1,9 +1,9 @@
+import os
 import uvicorn
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from inrastructure.routers import auth, users
-
 
 app = FastAPI()
 

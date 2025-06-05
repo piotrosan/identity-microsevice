@@ -1,3 +1,4 @@
+import json
 from typing import Tuple
 from uuid import UUID
 
@@ -24,8 +25,9 @@ class UserService(Service):
 
     def add_user(self, registration_data: RegistrationData) -> User:
         result = self.infrastructure_db.insert_user_with_external_login(
-            registration_data.user_data.model_dump(mode="python"),
-            registration_data.external_login_data.model_dump(mode="python")
+            registration_data.user.model_dump(mode="python"),
+            json.loads(registration_data.external_login),
+            json.loads(registration_data.user_permission)
         )
         return result[0]
 
@@ -35,6 +37,7 @@ class UserService(Service):
             registration_data: RegistrationData
     ) -> Tuple[AccessToken, RefreshToken, User]:
         user = self.add_user(registration_data)
+        import ipdb;ipdb.set_trace()
         access_token = TokenFactory.create_access_token({
             "user_data": {
                 "user_identifier": user.hash_identifier

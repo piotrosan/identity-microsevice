@@ -1,6 +1,6 @@
 import logging
 
-from domain.exception.http_exception_user import UserServiceGenericException
+from domain.exception.http.user import UserServiceGenericException
 
 logger = logging.getLogger("root")
 

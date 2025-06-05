@@ -3,7 +3,7 @@ import traceback
 from datetime import datetime
 
 from inrastructure.database.nosql.api.engine import MongoDbAPI
-from inrastructure.logger_sys.fluentd.fluentd_api import FluentdAPI
+from inrastructure.logger_sys.fluentd.api import FluentdAPI
 
 
 class MongoDbHandler(logging.Handler):

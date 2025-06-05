@@ -9,8 +9,8 @@ from inrastructure.database.sql import session
 from sqlalchemy import Select, Update, select, Row, and_, text, String
 from sqlalchemy import exc
 import inrastructure.database.sql as reload_session
-from inrastructure.database.sql.exception.http_exception_user import HttpUserDBException
-from inrastructure.database.sql.models import UserGroup, Role
+from inrastructure.database.sql.exception.user import HttpUserDBException
+from inrastructure.database.sql.models import UserPermissions
 from inrastructure.database.sql.models.user import User, ExternalLogin
 
 logger = logging.getLogger("root")
@@ -39,7 +39,11 @@ class IdentityUserDBEngine:
 class IdentityUserDBAPI(IdentityUserDBEngine):
 
     def insert_user_with_external_login(
-            self, user_data: dict, external_login_data: dict) -> Iterable[User]:
+            self,
+            user_data: dict,
+            external_login_data: dict,
+            user_permission: dict
+    ) -> Iterable[User]:
         """
         :param external_login_data:
         :param user_data:
@@ -49,7 +53,9 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
             user = User(**user_data)
             user.set_hash_identifier(user.email)
             external_login_data = ExternalLogin(**external_login_data)
-            user.external_login = external_login_data
+            user.external_logins = external_login_data
+            user_permission = UserPermissions(**user_permission)
+            user.user_permissions = [user_permission]
             return self.insert_objects([user])
         except exc.SQLAlchemyError as e:
             logger.critical(f"Problem wile insert user {user_data} -> {e}")
@@ -95,7 +101,7 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
 
     def _select_all_data_user_from_hash_sql(self, user_hash: UUID):
         try:
-            return select(User, ExternalLogin, UserGroup, Role).where(
+            return select(User, ExternalLogin, UserPermissions).where(
                 cast(
                     "ColumnElement[bool]",
                     User.hash_identifier == str(user_hash)
@@ -179,7 +185,7 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
     def get_all_context_for_user(
             self,
             user_hash: UUID
-    ) -> List[Tuple[User, ExternalLogin, UserGroup, Role]]:
+    ) -> List[Tuple[User, ExternalLogin, UserPermissions]]:
         try:
             return self.query_statement(
                 self._select_all_data_user_from_hash_sql(

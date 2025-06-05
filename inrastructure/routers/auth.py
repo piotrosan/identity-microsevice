@@ -5,13 +5,9 @@ from fastapi import Body
 
 from domain.auth.service import AuthService
 from domain.auth.login_command import RegisterUserCommandFactory
-from .request_models.request_user import RequestUser, RegistrationData, \
-    VerificationData
-from domain.user.service import UserService
+from .request_models.request_user import RequestUser, VerificationData
 from .response_model.response_register import UserContext
-from inrastructure.database.sql.api.user import IdentityUserDBAPI
-from ..cache.api.cache import RedisCache
-from ..database.sql.models import User
+
 from ..security.jwt.token import AccessToken, RefreshToken
 
 router = APIRouter(
@@ -22,22 +18,6 @@ router = APIRouter(
 
 command = RegisterUserCommandFactory
 
-@router.post(
-    "/register",
-    response_model=UserContext
-)
-async def register(
-        registration_data: Annotated[
-            RegistrationData, Body(...)
-        ]
-) -> Any:
-    api_db = IdentityUserDBAPI()
-    user_api = UserService(api_db)
-    all_user_context: Tuple[AccessToken, RefreshToken, User] = await user_api.register(
-        registration_data
-    )
-    cache_context = RedisCache()
-    cache_context.set_context(all_user_context)
 @router.post("/login", response_model=UserContext)
 def login(
         user_data: Annotated[

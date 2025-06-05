@@ -6,8 +6,7 @@ from redis.commands.search.field import TextField
 from redis.commands.search.query import Query
 from redis.commands.search.indexDefinition import IndexDefinition
 
-from inrastructure.database.sql.models import User, ExternalLogin, UserGroup, \
-    Role
+from inrastructure.database.sql.models import User, UserPermissions
 
 
 class RedisCache:
@@ -21,7 +20,7 @@ class RedisCache:
         self.redis_server.ft().create_index(
             (
                 TextField("email"),
-                TextField("group_and_roles"),
+                TextField("configuration"),
             ),
             definition=IndexDefinition(
                 prefix=["context:"]
@@ -30,43 +29,38 @@ class RedisCache:
 
     def _user_data_dump(
             self,
-            all_user_context: List[
+            all_context: List[
                 Tuple[
                     User,
-                    ExternalLogin,
-                    List[(UserGroup, List[Role])]
+                    UserPermissions,
                 ]
             ]
     ) -> Dict[str, Any]:
         result = {}
-        for auc in all_user_context:
+        for auc in all_context:
             user = auc[0]
-            ugs = auc[2]
-            result[user.hash_identifier]['groups_and_roles'] = {}
-            for ug in ugs:
-                result[user.hash_identifier]['groups_and_roles'][ug[0]] = ug[1]
-            result[user.hash_identifier]['email']= user.email
+            permission = auc[1]
+            result[user.hash_identifier]['permission_conf'] = permission.configuration
+            result[user.hash_identifier]['email'] = user.email
         return result
 
     def set_context(
             self,
-            all_user_context: List[
+            all_context: List[
                 Tuple[
                     User,
-                    ExternalLogin,
-                    List[(UserGroup, List[Role])]
+                    UserPermissions,
                 ]
             ]
     ):
-        user_data = self._user_data_dump(all_user_context)
+        user_data = self._user_data_dump(all_context)
         self.redis_server.hset(
             f'context:{user_data["hash_identifier"]}',
             'email',
                 user_data["hash_identifier"]["email"]
         )
-
         self.redis_server.hset(
             f'context:{user_data["hash_identifier"]}',
-            'group_and_roles',
-                json.dumps(user_data["hash_identifier"]["group_and_roles"])
+            'permission_conf',
+                user_data["hash_identifier"]["permission_conf"]
         )

@@ -9,4 +9,4 @@ engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=False)
 
 # Create sql_database session
 Session = sessionmaker(bind=engine)
-session = Session()
+session = Session(expire_on_commit=False)

@@ -1,29 +1,39 @@
+from typing import Tuple
+
 from domain.exception.http.auth import LoginHttpException
-from inrastructure.routers.request_models.request_user import RequestUser
+from domain.user.service import UserService
+from inrastructure.cache.api.redis import RedisCache
+from inrastructure.database.sql.api.user import IdentityUserDBAPI
+from inrastructure.database.sql.models import User
+from inrastructure.routers.request_models.request_auth import LoginData
 from inrastructure.validators.user import UserDataValidator
-from inrastructure.security.jwt.token import TokenFactory, AccessToken
 
 
 class Login:
     command = None
 
-    def __init__(self, command: RequestUser):
+    def __init__(self, command: LoginData):
         self.command = command
 
-    def _login(self) -> AccessToken:
+    def _login(self) -> Tuple[User, str]:
         if not self.command:
             raise LoginHttpException(status_code=400)
-        return TokenFactory.create_access_token(
-            self.command.model_dump()
+        iu_db_api = IdentityUserDBAPI()
+        us = UserService(iu_db_api)
+        user = us.get_user_detail_for_login_data(
+            self.command.email,
+            self.command.password
         )
+        rc = RedisCache()
+        context_address = rc.set_context(user)
+        return user, context_address
 
-    def __call__(self) -> AccessToken:
+    def __call__(self) -> Tuple[User, str]:
         return self._login()
 
 class RegisterUserCommandFactory:
     user_data_validator = UserDataValidator
 
     @classmethod
-    def from_request_data(cls, user_data: RequestUser) -> Login:
-        validated_user = cls.user_data_validator.validate(user_data)
-        return Login(validated_user)
+    def from_request_data(cls, user_data: LoginData) -> Login:
+        return Login(user_data)

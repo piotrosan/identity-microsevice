@@ -11,27 +11,21 @@ from inrastructure.database.sql.models import User, UserPermissions
 
 class RedisCache:
 
+    PREFIX = 'context:{user_identifier}'
+
     def __init__(self):
         self.redis_server = redis.Redis(
             host='localhost',
             port=6379,
             db=0
         )
-        self.redis_server.ft().create_index(
-            (
-                TextField("email"),
-                TextField("configuration"),
-            ),
-            definition=IndexDefinition(
-                prefix=["context:"]
-            ),
-        )
+
 
     def _user_data_dump(
             self,
             user: User
     ) -> Dict[str, Any]:
-        result = {}
+        result = {user.hash_identifier: {}}
         permission = user.user_permissions[0]
         result[user.hash_identifier]['permission_conf'] = permission.configuration
         result[user.hash_identifier]['email'] = user.email
@@ -43,12 +37,13 @@ class RedisCache:
     ):
         user_data = self._user_data_dump(user)
         self.redis_server.hset(
-            f'context:{user_data["hash_identifier"]}',
-            'email',
-                user_data["hash_identifier"]["email"]
+            name=self.PREFIX.format(user_identifier=user.hash_identifier),
+            key='email',
+            value=user_data[user.hash_identifier]["email"]
         )
         self.redis_server.hset(
-            f'context:{user_data["hash_identifier"]}',
-            'permission_conf',
-                user_data["hash_identifier"]["permission_conf"]
+            name=self.PREFIX.format(user_identifier=user.hash_identifier),
+            key='permission_conf',
+            value=json.dumps(user_data[user.hash_identifier]["permission_conf"])
         )
+        return self.PREFIX.format(user_identifier=user.hash_identifier)

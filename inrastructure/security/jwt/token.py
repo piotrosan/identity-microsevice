@@ -13,7 +13,7 @@ from inrastructure.security.jwt.token_mixins import (
     TokenEncoderMixin,
     TokenDecoderMixin
 )
-
+from settings import APP_ID
 
 """
 “exp” (Expiration Time) Claim
@@ -48,6 +48,11 @@ class AbstractToken(ABC):
     def validate(cls, token: str) -> bool:
         raise NotImplemented
 
+    @classmethod
+    def _add_local_app(cls):
+        cls.apps.append(APP_ID)
+
+
 
 class Token(
     TokenEncoderMixin,
@@ -61,6 +66,7 @@ class Token(
         self.iss = os.getenv("iss")
 
     def set_user_data(self, user_data: dict):
+        self._add_local_app()
         self.__dict__.update(user_data)
 
     def _get_dump_payload(self):

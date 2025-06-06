@@ -1,6 +1,6 @@
 import logging
 from importlib import reload
-from typing import Sequence, Iterable, List, cast, Tuple
+from typing import Sequence, Iterable, List, cast, Tuple, Generator
 from uuid import UUID
 
 from typing_extensions import Any
@@ -20,7 +20,11 @@ class IdentityUserDBEngine:
     def reload_session(self):
         reload(reload_session)
 
-    def query_statement(self, select_query: Select[Any]) -> Row[Any]:
+    def query_statement(
+            self,
+            select_query: Select[Any]
+    ) -> Generator[Any]:
+
         with session as s:
             for row in s.execute(select_query):
                 yield row
@@ -83,6 +87,27 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
 
         return tmp_select
 
+    def _select_all_data_user_from_hash_sql(self, user_hash: UUID):
+        try:
+            return (
+                select(User)
+                .join(User.external_logins)
+                .join(User.user_permissions)
+                .where(
+                    cast(
+                        "ColumnElement[bool]",
+                        User.hash_identifier == str(user_hash)
+                    )
+                )
+            )
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                f"Problem wile select user from hash identifier {e}")
+            raise HttpUserDBException(
+                detail="Can not select users",
+                status_code=400
+            )
+
     def _select_user_from_hash_sql(self, user_hash: UUID):
         try:
             return select(User).where(
@@ -99,12 +124,28 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
                 status_code=400
             )
 
-    def _select_all_data_user_from_hash_sql(self, user_hash: UUID):
+
+    def _select_all_data_user_from_password_email_sql(
+            self,
+            email: str,
+            password: str
+    ):
         try:
-            return select(User, ExternalLogin, UserPermissions).where(
-                cast(
-                    "ColumnElement[bool]",
-                    User.hash_identifier == str(user_hash)
+            return (
+                select(User)
+                .join(User.external_logins)
+                .join(User.user_permissions)
+                .where(
+                    and_(
+                        cast(
+                            "ColumnElement[bool]",
+                            User.email == email
+                        ),
+                        cast(
+                            "ColumnElement[bool]",
+                            User.password == password
+                        ),
+                    )
                 )
             )
         except exc.SQLAlchemyError as e:
@@ -119,7 +160,7 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
             self,
             column: List[str] = None,
             order: List[str] = None
-    ) -> Row[Any]:
+    ) -> Generator[Any]:
         try:
             return self.query_statement(
                 self._select_all_user_sql(column, order)
@@ -134,7 +175,7 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
     def query_user_generator(
             self,
             user_hash: UUID
-    ) -> Row[Any]:
+    ) -> Generator[Any]:
         try:
             return self.query_statement(
                 self._select_user_from_hash_sql(user_hash)
@@ -149,11 +190,9 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
     def raw_query_user(
             self,
             select_query: Select[Any],
-    ) -> Sequence[Row]:
+    ) -> Sequence[Any]:
         try:
-            return list(self._query_statement(
-                self.query_statement(select_query)
-            ))
+            return list(self.query_statement(select_query))
         except exc.SQLAlchemyError as e:
             logger.critical(
                 f"Problem wile select user from "
@@ -167,11 +206,10 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
     def raw_query_user_generator(
             self,
             select_query: Select[Any],
-    ) -> Row[Any]:
+    ) -> Generator[Any]:
         try:
-            return self._query_statement(
-                self.query_statement(select_query)
-            ).all()
+            return self.query_statement(select_query)
+
         except exc.SQLAlchemyError as e:
             logger.critical(
                 f"Problem wile select user from "
@@ -182,15 +220,34 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
                 status_code=400
             )
 
-    def get_all_context_for_user(
+    def get_all_context_for_user_hash(
             self,
             user_hash: UUID
-    ) -> List[Tuple[User, ExternalLogin, UserPermissions]]:
+    ) -> Generator[Any]:
         try:
             return self.query_statement(
                 self._select_all_data_user_from_hash_sql(
                     user_hash)
-            ).all()
+            )
+        except exc.SQLAlchemyError as e:
+            logger.critical("Problem wile select all users")
+            raise HttpUserDBException(
+                detail=f"Can not select user {e}",
+                status_code=400
+            )
+
+    def get_all_context_for_user_email_password(
+            self,
+            email: str,
+            password: str
+    ) -> Generator[Any]:
+        try:
+            return self.query_statement(
+                self._select_all_data_user_from_password_email_sql(
+                    email,
+                    password
+                )
+            )
         except exc.SQLAlchemyError as e:
             logger.critical("Problem wile select all users")
             raise HttpUserDBException(

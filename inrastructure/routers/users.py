@@ -2,10 +2,12 @@ from typing import Annotated, Any, Tuple
 
 from fastapi import APIRouter, Body
 
-from inrastructure.routers.response_model.response_register import ResponseUserData
-from inrastructure.routers.request_models.request_user import RequestUser, RegistrationData
+from inrastructure.routers.response_model.response_user import ResponseUserData
+from inrastructure.routers.request_models.request_user import (
+
+    UpdateUserData
+)
 from domain.user.service import UserService
-from inrastructure.routers.response_model.response_register import UserContext
 from inrastructure.database.sql.api.user import IdentityUserDBAPI
 from inrastructure.cache.api.redis import RedisCache
 from inrastructure.database.sql.models import User
@@ -18,29 +20,12 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.post(
-    "/register",
-    response_model=UserContext
-)
-async def register(
-        registration_data: Annotated[
-            RegistrationData, Body(...)
-        ]
-) -> Any:
-    api_db = IdentityUserDBAPI()
-    user_api = UserService(api_db)
-    all_context: Tuple[
-        AccessToken,
-        RefreshToken,
-        User
-    ] = await user_api.register(registration_data)
-    cache_context = RedisCache()
-    cache_context.set_context(all_context[2])
+@router.put("/", response_model=ResponseUserData)
+async def update_user(user_data: UpdateUserData, request: Request):
+    ido = IdentityUserDBAPI()
+    us = UserService(ido)
+    us.get_user_detail()
 
-
-@router.put("/{user_id}", response_model=ResponseUserData)
-async def modify_user(user_data: RequestUser, user_id: str):
-    return {}
 
 
 

@@ -25,16 +25,24 @@ services:
     ports:
       - 8080:8080
 
+#  cache:
+#    image: redis:7.4.4
+#    restart: always
+#    ports:
+#      - '6379:6379'
+#    # command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+#    volumes:
+#      - cache:/data
   cache:
-    image: redis:6.2-alpine
+    image: redislabs/redisearch:latest
     restart: always
     ports:
       - '6379:6379'
     # command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
-    volumes:
-      - cache:/data
+#    volumes:
+#      - cache:/data
 
 volumes:
   db_identity:
-  cache:
-    driver: local
+#  cache:
+#    driver: local

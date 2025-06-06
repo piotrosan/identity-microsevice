@@ -5,7 +5,7 @@ from fastapi import APIRouter
 
 from inrastructure.routers.request_models.request_user import (
     PermissionRequestData)
-from inrastructure.routers.response_model.response_register import \
+from inrastructure.routers.response_model.response_user import \
     PermissionResponseData
 
 router = APIRouter(

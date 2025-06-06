@@ -1,17 +1,31 @@
 from pydantic import BaseModel
 
+from inrastructure.database.sql.models.user import AgeRange
 
-class RequestUser(BaseModel):
+
+
+class RequestUserData(BaseModel):
     email: str
     password: str | None = None
-    age_range: str | None = None
+    age_range: AgeRange | None = None
     additional_info: str | None = None
 
 
-class RegistrationData(BaseModel):
-    user: RequestUser
-    external_login: str
-    user_permission: str
+class UpdateUserData(RequestUserData):
+    pass
+
+
+class UpdateExternalLoginData(BaseModel):
+    user: str
+    configuration: str
+
+
+class UpdateUserPermission(BaseModel):
+    user: str
+    configuration: str
+
+
+
 
 
 class VerificationData(BaseModel):

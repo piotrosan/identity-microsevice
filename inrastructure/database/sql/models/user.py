@@ -20,6 +20,8 @@ from sqlalchemy.orm import validates
 
 from inrastructure.database.sql.models.base import Base
 from inrastructure.database.sql.models.mixins import CreatedUpdatedMixin
+from inrastructure.security.jwt.token import TokenFactory, AccessToken, \
+    RefreshToken
 
 
 class AgeRange(enum.Enum):
@@ -86,6 +88,30 @@ class User(CreatedUpdatedMixin, Base):
                 f"prohibited char"
             )
         return email
+
+    def get_access_token(self):
+
+        apps = [up.app for up in self.user_permissions]
+        access_token: AccessToken = TokenFactory.create_access_token(
+            {
+                "user_data": {
+                    "user_identifier": self.hash_identifier,
+                    "apps": apps
+                }
+            })
+        return access_token
+
+    def get_refresh_token(self):
+
+        apps = [up.app for up in self.user_permissions]
+        refresh_token: RefreshToken = TokenFactory.create_refresh_token(
+            {
+                "user_data": {
+                    "user_identifier": self.hash_identifier,
+                    "apps": apps
+                }
+            })
+        return RefreshToken
 
 class ExternalLogin(CreatedUpdatedMixin, Base):
 

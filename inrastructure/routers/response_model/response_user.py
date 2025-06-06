@@ -3,20 +3,25 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from inrastructure.database.sql.models.user import AgeRange
+
 
 class ResponseUserData(BaseModel):
     email: str
     password: str | None = None
-    age_range: str | None = None
+    age_range: AgeRange | None = None
     sector: str | None = None
     something_about_me: str | None = None
 
 
-class UserContext(BaseModel):
-    refresh_token: str | None = None
-    token: str | None = None
-    payload: dict | None = None
-    validate: bool | None = None
+class ResponseRegisterUser(BaseModel):
+    refresh_token: str
+    access_token: str
+    context_address: str
+
+
+class ResponseUserSecurity(ResponseRegisterUser):
+    pass
 
 
 class DetailUserContext(BaseModel):

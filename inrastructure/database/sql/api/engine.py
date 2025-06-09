@@ -1,8 +1,6 @@
-import abc, collections
+import abc
 from importlib import reload
-from typing import Sequence, Iterable, Generator, AsyncGenerator
-
-from typing_extensions import Any
+from typing import Iterable, Generator, Iterator, Any
 
 from inrastructure.database.sql import session
 from sqlalchemy import Select, Update
@@ -18,7 +16,7 @@ class DBEngineAbstract(abc.ABC):
     def query_statement(
             self,
             select_query: Select[Any],
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         raise NotImplemented()
 
     def insert_objects(
@@ -41,7 +39,7 @@ class DBEngine(DBEngineAbstract):
             select_query: Select[Any],
             model: type[Base] = None,
             page: int = None
-    ) -> collections.abc.Generator[Any]:
+    ) -> Iterator[Any]:
         if page:
             pagination = Pagination(select_query, model)
             select_query = pagination.get_page(page)
@@ -49,7 +47,6 @@ class DBEngine(DBEngineAbstract):
         with session as s:
             for row in s.execute(select_query):
                 yield row
-            s.commit()
 
 
     def insert_objects(self, objects: Iterable[Any]) -> Iterable[Any]:

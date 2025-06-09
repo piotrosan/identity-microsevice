@@ -72,11 +72,10 @@ class UserService(Service):
         await send_mail("Activate user", body, [user.email])
 
     def get_user_detail(self, user_hash: UUID):
-        user_combo_data = self.infrastructure_db.get_all_context_for_user_hash(
+        user = self.infrastructure_db.get_all_context_for_user_hash(
             user_hash
         )
-        # ToDO after fill all data
-        return user_combo_data
+        return user
 
     def get_user_detail_for_login_data(
             self,

@@ -1,5 +1,5 @@
 import logging
-from typing import Sequence, Iterable, List, cast, Tuple, Generator
+from typing import Sequence, Iterable, List, cast, Tuple, Generator, Iterator
 from uuid import UUID
 
 from typing_extensions import Any
@@ -49,7 +49,7 @@ class GetUserDBAPI(DBEngineAbstract, SQLSelect):
             self,
             column: List[str] = None,
             order: List[str] = None
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         try:
             return self.query_statement(
                 self._select_all_user_sql(column, order)
@@ -64,7 +64,7 @@ class GetUserDBAPI(DBEngineAbstract, SQLSelect):
     def query_user_generator(
             self,
             user_hash: UUID
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         try:
             return self.query_statement(
                 self._select_user_from_hash_sql(user_hash)
@@ -95,7 +95,7 @@ class GetUserDBAPI(DBEngineAbstract, SQLSelect):
     def raw_query_user_generator(
             self,
             select_query: Select[Any],
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         try:
             return self.query_statement(select_query)
 
@@ -112,7 +112,7 @@ class GetUserDBAPI(DBEngineAbstract, SQLSelect):
     def get_all_context_for_user_hash(
             self,
             user_hash: UUID
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         try:
             return self.query_statement(
                 self._select_all_data_user_from_hash_sql(
@@ -129,7 +129,7 @@ class GetUserDBAPI(DBEngineAbstract, SQLSelect):
             self,
             email: str,
             password: str
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         try:
             return self.query_statement(
                 self._select_all_data_user_from_password_email_sql(

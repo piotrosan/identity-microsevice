@@ -20,8 +20,16 @@ class ResponseRegisterUser(BaseModel):
     context_address: str
 
 
-class ResponseUserSecurity(ResponseRegisterUser):
-    pass
+
+class ResponseUserContext(BaseModel):
+    validate: bool
+    hash_identifier: str
+    permission: dict
+
+
+class RefreshTokenResponse(BaseModel):
+    token: str
+    refresh_token: str
 
 
 class DetailUserContext(BaseModel):

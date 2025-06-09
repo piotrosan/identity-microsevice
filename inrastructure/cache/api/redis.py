@@ -1,12 +1,12 @@
-import json
-from typing import Dict, Any, List, Tuple
-
 import redis
-from redis.commands.search.field import TextField
-from redis.commands.search.query import Query
-from redis.commands.search.indexDefinition import IndexDefinition
+import json
+import logging
+from typing import Dict, Any, List, Tuple, Awaitable
 
+from inrastructure.cache.exception.cache import CacheHttpException
 from inrastructure.database.sql.models import User, UserPermissions
+
+logger = logging.getLogger('root')
 
 
 class RedisCache:
@@ -19,7 +19,6 @@ class RedisCache:
             port=6379,
             db=0
         )
-
 
     def _user_data_dump(
             self,
@@ -47,3 +46,33 @@ class RedisCache:
             value=json.dumps(user_data[user.hash_identifier]["permission_conf"])
         )
         return self.PREFIX.format(user_identifier=user.hash_identifier)
+
+    def get_context(self, user: User) -> dict[str, str | dict]:
+        email = self.redis_server.hget(
+            self.PREFIX.format(user_identifier=user.hash_identifier),
+            'email'
+        )
+        if email != user.email:
+            logger.critical('Email doesnt fit to user')
+            raise CacheHttpException(
+                detail='Email doesnt fit to user',
+                status_code=400
+            )
+
+        permission_conf = self.redis_server.hget(
+            self.PREFIX.format(user_identifier=user.hash_identifier),
+            'permission_conf'
+        )
+        if permission_conf != '':
+            logger.critical('There is no permission configuration')
+            raise CacheHttpException(
+                detail='There is no permission configuration',
+                status_code=400
+            )
+
+        return {
+            'context_address': self.PREFIX.format(
+                user_identifier=user.hash_identifier),
+            'email': email,
+            'permission_conf': json.loads(permission_conf)
+        }

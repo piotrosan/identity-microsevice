@@ -12,10 +12,9 @@ from settings import DOMAIN, PORT
 middlewares = [
     Middleware(
         AuthenticationMiddleware,
-        backends=TokenAuthBackend()
+        backend=TokenAuthBackend()
     ),
 ]
-
 app = FastAPI(middleware=middlewares)
 app.include_router(auth.router)
 app.include_router(

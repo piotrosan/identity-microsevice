@@ -1,3 +1,4 @@
+import logging
 from fastapi import Request
 from starlette.authentication import AuthenticationBackend, AuthenticationError, \
     SimpleUser
@@ -7,15 +8,15 @@ from inrastructure.security.jwt.token import TokenFactory, AccessToken
 from settings import APP_ID
 
 
+logger = logging.getLogger('root')
+
 class TokenAuthBackend(AuthenticationBackend):
     async def authenticate(self, request: Request):
         try:
             token = request.headers["Authorization"]
         except KeyError as exc:
-            raise TokenAuthException(
-                detail='Empty headers, fill token in Authorization key',
-                status_code=400
-            )
+            logger.info(msg='Empty headers, fill token in Authorization key')
+            return None, None # SimpleUser(username='Anonymous')
 
         validate, payload = AccessToken.validate(token, APP_ID)
 

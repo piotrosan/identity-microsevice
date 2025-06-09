@@ -1,10 +1,22 @@
 import uvicorn
 
 from fastapi import FastAPI, Depends
+from starlette.middleware import Middleware
+from starlette.middleware.authentication import AuthenticationMiddleware
+
 from inrastructure.routers import auth, users
+from inrastructure.security.middleware.auth import TokenAuthBackend
 from settings import DOMAIN, PORT
 
-app = FastAPI()
+
+middlewares = [
+    Middleware(
+        AuthenticationMiddleware,
+        backends=TokenAuthBackend()
+    ),
+]
+
+app = FastAPI(middleware=middlewares)
 app.include_router(auth.router)
 app.include_router(
     users.router,

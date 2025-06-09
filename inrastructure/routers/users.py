@@ -20,11 +20,11 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.put("/", response_model=ResponseUserData)
-async def update_user(user_data: UpdateUserData, request: Request):
-    ido = IdentityUserDBAPI()
-    us = UserService(ido)
-    us.get_user_detail()
+# @router.put("/", response_model=ResponseUserData)
+# async def update_user(user_data: UpdateUserData, request: Request):
+#     ido = IdentityUserDBAPI()
+#     us = UserService(ido)
+#     us.get_user_detail()
 
 
 

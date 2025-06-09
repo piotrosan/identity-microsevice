@@ -91,9 +91,10 @@ class UserService(Service):
         return users[0]
 
     def update_user_detail(self, user_hash: UUID, data: UpdateUserData):
-        user = self.infrastructure_db.get_all_context_for_user_hash(
-            user_hash
-        )
-        {setattr(user, key, value) for key, value in data.items()}
+        # user = self.infrastructure_db.get_all_context_for_user_hash(
+        #     user_hash
+        # )
+        # {setattr(user, key, value) for key, value in data.items()}
         # self.infrastructure_db.
         # return user_combo_data
+        pass

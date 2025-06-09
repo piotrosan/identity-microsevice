@@ -1,47 +1,21 @@
 import logging
-from importlib import reload
 from typing import Sequence, Iterable, List, cast, Tuple, Generator
 from uuid import UUID
 
 from typing_extensions import Any
 
-from inrastructure.database.sql import session
 from sqlalchemy import Select, Update, select, Row, and_, text, String
 from sqlalchemy import exc
-import inrastructure.database.sql as reload_session
+from inrastructure.database.sql.api.engine import DBEngineAbstract, DBEngine
+from inrastructure.database.sql.api.sql.get import SQLSelect
 from inrastructure.database.sql.exception.user import HttpUserDBException
 from inrastructure.database.sql.models import UserPermissions
 from inrastructure.database.sql.models.user import User, ExternalLogin
 
 logger = logging.getLogger("root")
 
-class IdentityUserDBEngine:
 
-    def reload_session(self):
-        reload(reload_session)
-
-    def query_statement(
-            self,
-            select_query: Select[Any]
-    ) -> Generator[Any]:
-
-        with session as s:
-            for row in s.execute(select_query):
-                yield row
-
-    def insert_objects(self, objects: Iterable[User]) -> Iterable[User]:
-        with session as s:
-            s.add_all(objects)
-            s.commit()
-        return objects
-
-    def _update_statement(self, upd: Update[Any]):
-        with session as s:
-            s.execute(upd).scalar()
-            s.commit()
-
-class IdentityUserDBAPI(IdentityUserDBEngine):
-
+class CreateUserDBAPI(DBEngineAbstract):
     def insert_user_with_external_login(
             self,
             user_data: dict,
@@ -68,93 +42,8 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
                 status_code=400
             )
 
-    def _select_all_user_sql(
-            self,
-            column: List[str] = None,
-            order: List[str] = None
-    ):
-        tmp_select = select(User)
 
-        if column:
-            tmp_select.column(*[text(col) for col in column])
-
-        tmp_select.join_from(
-            ExternalLogin,
-            User
-        )
-        if order:
-            tmp_select.order_by(*[text(col) for col in order])
-
-        return tmp_select
-
-    def _select_all_data_user_from_hash_sql(self, user_hash: UUID):
-        try:
-            return (
-                select(User)
-                .join(User.external_logins)
-                .join(User.user_permissions)
-                .where(
-                    cast(
-                        "ColumnElement[bool]",
-                        User.hash_identifier == str(user_hash)
-                    )
-                )
-            )
-        except exc.SQLAlchemyError as e:
-            logger.critical(
-                f"Problem wile select user from hash identifier {e}")
-            raise HttpUserDBException(
-                detail="Can not select users",
-                status_code=400
-            )
-
-    def _select_user_from_hash_sql(self, user_hash: UUID):
-        try:
-            return select(User).where(
-                cast(
-                    "ColumnElement[bool]",
-                    User.hash_identifier == str(user_hash)
-                )
-            )
-        except exc.SQLAlchemyError as e:
-            logger.critical(
-                f"Problem wile select user from hash identifier {e}")
-            raise HttpUserDBException(
-                detail="Can not select users",
-                status_code=400
-            )
-
-
-    def _select_all_data_user_from_password_email_sql(
-            self,
-            email: str,
-            password: str
-    ):
-        try:
-            return (
-                select(User)
-                .join(User.external_logins)
-                .join(User.user_permissions)
-                .where(
-                    and_(
-                        cast(
-                            "ColumnElement[bool]",
-                            User.email == email
-                        ),
-                        cast(
-                            "ColumnElement[bool]",
-                            User.password == password
-                        ),
-                    )
-                )
-            )
-        except exc.SQLAlchemyError as e:
-            logger.critical(
-                f"Problem wile select user from hash identifier {e}")
-            raise HttpUserDBException(
-                detail="Can not select users",
-                status_code=400
-            )
+class GetUserDBAPI(DBEngineAbstract, SQLSelect):
 
     def query_all_users_with_external_login_generator(
             self,
@@ -254,3 +143,11 @@ class IdentityUserDBAPI(IdentityUserDBEngine):
                 detail=f"Can not select user {e}",
                 status_code=400
             )
+
+
+class IdentityUserDBAPI(
+    CreateUserDBAPI,
+    GetUserDBAPI,
+    DBEngine
+):
+    pass

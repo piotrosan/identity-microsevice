@@ -8,7 +8,7 @@ from inrastructure.security.jwt.token import TokenFactory
 
 logger = logging.getLogger("root")
 
-# get from https://stackoverflow.com/questions/15799696/how-to-build-urls-in-python-with-the-standard-library
+# sql from https://stackoverflow.com/questions/15799696/how-to-build-urls-in-python-with-the-standard-library
 
 Components = namedtuple(
     typename='Components',

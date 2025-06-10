@@ -1,5 +1,5 @@
 import json
-from typing import Tuple, List, Generator
+from typing import Tuple, List, Generator, Iterator
 from uuid import UUID
 
 from inrastructure.cache.api.redis import RedisCache
@@ -81,13 +81,17 @@ class UserService(Service):
             self,
             email: str,
             password: str
-    ) -> User:
-        gen_user: Generator[User] = self.infrastructure_db.get_all_context_for_user_email_password(
-            email,
-            password
+    ) -> User | None:
+        users: List[User] = next(
+            self.infrastructure_db.get_all_context_for_user_email_password(
+                email,
+                password
+            )
         )
-        users: list[User] = next(gen_user)
-        return users[0]
+        import ipdb;ipdb.set_trace()
+        if users:
+            return users[0]
+        return None
 
     def update_user_detail(self, user_hash: UUID, data: UpdateUserData):
         # user = self.infrastructure_db.get_all_context_for_user_hash(

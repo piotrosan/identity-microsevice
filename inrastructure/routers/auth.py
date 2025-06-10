@@ -27,7 +27,7 @@ command = RegisterUserCommandFactory
 @router.post("/login", response_model=ResponseRegisterUser)
 def login(
         user_data: Annotated[
-            LoginData, Body(embed=True)]
+            LoginData, Body(...)]
 ) -> ResponseRegisterUser:
     login_command = command.from_request_data(user_data)
     user, context_address = login_command()

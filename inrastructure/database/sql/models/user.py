@@ -111,7 +111,7 @@ class User(CreatedUpdatedMixin, Base):
                     "apps": apps
                 }
             })
-        return RefreshToken
+        return refresh_token
 
 class ExternalLogin(CreatedUpdatedMixin, Base):
 

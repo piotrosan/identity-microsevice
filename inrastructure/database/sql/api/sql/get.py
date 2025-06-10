@@ -3,6 +3,8 @@ from typing import Sequence, Iterable, List, cast, Tuple, Generator
 from uuid import UUID
 
 from sqlalchemy import Select, Update, select, Row, and_, text, String
+from sqlalchemy.orm import contains_eager
+
 from inrastructure.database.sql.models.user import User, ExternalLogin
 
 logger = logging.getLogger("root")
@@ -39,6 +41,8 @@ class SQLSelect:
                     User.hash_identifier == str(user_hash)
                 )
             )
+            .options(contains_eager(User.user_permissions))
+            .options(contains_eager(User.external_logins))
         )
 
     def _select_user_from_hash_sql(self, user_hash: UUID):
@@ -72,4 +76,6 @@ class SQLSelect:
                     ),
                 )
             )
+            .options(contains_eager(User.user_permissions))
+            .options(contains_eager(User.external_logins))
         )

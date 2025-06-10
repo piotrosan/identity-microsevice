@@ -48,10 +48,6 @@ class AbstractToken(ABC):
     def validate(cls, token: str) -> bool:
         raise NotImplemented
 
-    @classmethod
-    def _add_local_app(cls):
-        cls.apps.append(APP_ID)
-
 
 
 class Token(
@@ -66,7 +62,7 @@ class Token(
         self.iss = os.getenv("iss")
 
     def set_user_data(self, user_data: dict):
-        self._add_local_app()
+        user_data['apps'] = [APP_ID,]
         self.__dict__.update(user_data)
 
     def _get_dump_payload(self):

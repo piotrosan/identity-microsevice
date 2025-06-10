@@ -4,7 +4,7 @@ import logging
 from typing import Dict, Any, List, Tuple, Awaitable
 
 from inrastructure.cache.exception.cache import CacheHttpException
-from inrastructure.database.sql.models import User, UserPermissions
+from inrastructure.database.sql.models import User
 
 logger = logging.getLogger('root')
 
@@ -25,8 +25,9 @@ class RedisCache:
             user: User
     ) -> Dict[str, Any]:
         result = {user.hash_identifier: {}}
-        permission = user.user_permissions[0]
-        result[user.hash_identifier]['permission_conf'] = permission.configuration
+        tmp_up = {}
+        # todo
+        result[user.hash_identifier]['permission_conf'] = user.user_permissions
         result[user.hash_identifier]['email'] = user.email
         return result
 

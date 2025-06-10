@@ -45,7 +45,7 @@ class DBEngine(DBEngineAbstract):
             select_query = pagination.get_page(page)
 
         with session as s:
-            for row in s.execute(select_query):
+            for row in s.execute(select_query).unique():
                 yield row
 
 

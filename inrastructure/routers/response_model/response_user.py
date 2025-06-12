@@ -18,6 +18,7 @@ class ResponseRegisterUser(BaseModel):
     refresh_token: str
     access_token: str
     context_address: str
+    hash_identifier: UUID
 
 
 

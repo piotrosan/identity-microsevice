@@ -1,4 +1,5 @@
 from typing import Annotated, Any, Tuple
+from uuid import UUID
 
 from fastapi import APIRouter
 from fastapi import Body
@@ -30,11 +31,12 @@ def login(
             LoginData, Body(...)]
 ) -> ResponseRegisterUser:
     login_command = command.from_request_data(user_data)
-    user, context_address = login_command()
+    user, context_address, hash_identifier = login_command()
     return ResponseRegisterUser(
         access_token=user.get_access_token().access_token,
         refresh_token=user.get_refresh_token().refresh_token,
-        context_address=context_address
+        context_address=context_address,
+        hash_identifier=hash_identifier
     )
 
 
@@ -52,7 +54,8 @@ async def register(
     all_context: Tuple[
         AccessToken,
         RefreshToken,
-        str
+        str,
+        UUID
     ] = await user_api.register(registration_data)
     access_token = all_context[0]
     refresh_token = all_context[1]
@@ -60,7 +63,8 @@ async def register(
     return ResponseRegisterUser(
         access_token=access_token.access_token,
         refresh_token=refresh_token.refresh_token,
-        context_address=all_context[2]
+        context_address=all_context[2],
+        hash_identifier=all_context[3]
     )
 
 

@@ -9,7 +9,6 @@ from sqlalchemy import exc
 from inrastructure.database.sql.api.engine import DBEngineAbstract, DBEngine
 from inrastructure.database.sql.api.sql.get import SQLSelect
 from inrastructure.database.sql.exception.user import HttpUserDBException
-from inrastructure.database.sql.models import UserPermissions
 from inrastructure.database.sql.models.user import User, ExternalLogin
 
 logger = logging.getLogger("root")
@@ -20,8 +19,7 @@ class CreateUserDBAPI(DBEngineAbstract):
             self,
             user_data: dict,
             external_login_data: dict,
-            user_permission: dict
-    ) -> Iterable[User]:
+    ) -> User:
         """
         :param external_login_data:
         :param user_data:
@@ -30,11 +28,11 @@ class CreateUserDBAPI(DBEngineAbstract):
         try:
             user = User(**user_data)
             user.set_hash_identifier(user.email)
+            user.set_password(user.password)
             external_login_data = ExternalLogin(**external_login_data)
             user.external_logins = external_login_data
-            user_permission = UserPermissions(**user_permission)
-            user.user_permissions = [user_permission]
-            return self.insert_objects([user])
+            self.insert_objects([user])
+            return user
         except exc.SQLAlchemyError as e:
             logger.critical(f"Problem wile insert user {user_data} -> {e}")
             raise HttpUserDBException(

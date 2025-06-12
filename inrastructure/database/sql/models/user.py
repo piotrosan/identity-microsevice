@@ -45,16 +45,16 @@ class User(CreatedUpdatedMixin, Base):
         back_populates="users"
     )
 
-    user_permissions: Mapped[List[("UserPermissions")]] = relationship(
-        back_populates="users"
-    )
+    def set_password(self, password: str):
+        self.password = bcrypt.hashpw(
+            password.encode('UTF-8'),
+            bcrypt.gensalt()
+        )
 
-
-    def set_password(self, password):
-        self.password = bcrypt.hashpw(password, bcrypt.gensalt())
-
-    def check_password(self, password) -> bool:
-        return self.password == bcrypt.hashpw(password, bcrypt.gensalt())
+    def check_password(self, password: str) -> bool:
+        return self.password == bcrypt.hashpw(
+            password.encode('UTF-8'),
+            bcrypt.gensalt())
 
     def set_hash_identifier(self, email: str):
         self.hash_identifier = str(

@@ -6,8 +6,7 @@ from inrastructure.cache.api.redis import RedisCache
 from inrastructure.mail.mail import render_template
 from inrastructure.mail.tools import send_mail
 from domain.user.base_service import Service
-from inrastructure.database.sql.models import User, ExternalLogin, \
-    UserPermissions
+from inrastructure.database.sql.models import User, ExternalLogin
 from inrastructure.database.sql.api.user import IdentityUserDBAPI
 from inrastructure.routers.request_models.request_auth import RegistrationData
 from inrastructure.routers.request_models.request_user import UpdateUserData
@@ -27,12 +26,10 @@ class UserService(Service):
         super().__init__()
 
     def _add_user(self, registration_data: RegistrationData) -> User:
-        result = self.infrastructure_db.insert_user_with_external_login(
+        return self.infrastructure_db.insert_user_with_external_login(
             registration_data.user.model_dump(mode="python"),
             json.loads(registration_data.external_login),
-            json.loads(registration_data.user_permission)
         )
-        return result[0]
 
     def _set_cache_context(self, user: User) -> str:
         cache_context = RedisCache()
@@ -42,7 +39,7 @@ class UserService(Service):
     async def register(
             self,
             registration_data: RegistrationData
-    ) -> Tuple[AccessToken, RefreshToken, str]:
+    ) -> Tuple[AccessToken, RefreshToken, str, UUID]:
         user = self._add_user(registration_data)
         context_identifier = self._set_cache_context(user)
 
@@ -59,7 +56,12 @@ class UserService(Service):
             }
         })
         await self._send_activation_link(user)
-        return access_token, refresh_token, context_identifier
+        return (
+            access_token, # 0
+            refresh_token, # 1
+            context_identifier, # 2
+            user.hash_identifier # 3
+        )
 
     async def _send_activation_link(self, user: User):
         template_root = f"{root_path}/domain/template/"

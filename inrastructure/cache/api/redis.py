@@ -12,6 +12,7 @@ logger = logging.getLogger('root')
 class RedisCache:
 
     PREFIX = 'context:{user_identifier}'
+    APP_PREFIX = 'apps_identifiers:'
 
     def __init__(self):
         self.redis_server = redis.Redis(
@@ -58,6 +59,26 @@ class RedisCache:
             'email': email,
         }
 
+    def set_app_registry(self, app_id):
+        if self.redis_server.hexists(
+            name=self.APP_PREFIX,
+            key=app_id,
+        ):
+            self.redis_server.hset(
+                name=self.APP_PREFIX,
+                key=app_id,
+                value=app_id
+            )
 
-    def set_app_registry(self):
-        pass
+    def unset_app_registry(self, app_id):
+        if self.redis_server.hexists(
+            name=self.APP_PREFIX,
+            key=app_id,
+        ):
+            self.redis_server.hdel(
+                self.APP_PREFIX,
+                *[app_id]
+            )
+
+    def get_app_registry(self) -> dict:
+        return self.redis_server.hgetall(self.APP_PREFIX)

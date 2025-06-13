@@ -3,12 +3,17 @@ from uuid import UUID
 
 from fastapi import APIRouter
 from fastapi import Body
+from redis import Redis
 
 from domain.auth.service import AuthService
 from domain.auth.login_command import RegisterUserCommandFactory
 from domain.user.service import UserService
-from inrastructure.routers.request_models.request_auth import LoginData, RegistrationData
+from inrastructure.cache.api.redis import RedisCache
+from inrastructure.routers.request_models.request_auth import LoginData, \
+    RegistrationData, RegistrationAPPData
 from inrastructure.routers.request_models.request_user import RequestUserData, VerificationData
+from inrastructure.routers.response_model.response_generic import \
+    GenericResponse
 from inrastructure.routers.response_model.response_user import (
     ResponseRegisterUser,
     ResponseUserContext, RefreshTokenResponse
@@ -68,10 +73,40 @@ async def register(
     )
 
 
+@router.post(
+    "/app_register",
+    response_model=GenericResponse,
+    status_code=200
+)
+async def app_register(
+        registration_data: Annotated[
+            RegistrationAPPData, Body(...)
+        ]
+) -> GenericResponse:
+    r = RedisCache()
+    r.set_app_registry(registration_data.app)
+    return GenericResponse(message='App registered', timestamp='')
+
+
+@router.post(
+    "/app_unregister",
+    response_model=GenericResponse,
+    status_code=200
+)
+async def app_unregister(
+        registration_data: Annotated[
+            RegistrationAPPData, Body(...)
+        ]
+) -> GenericResponse:
+    r = RedisCache()
+    r.unset_app_registry(registration_data.app)
+    return GenericResponse(message='App unregistered', timestamp='')
+
+
 @router.post("/token-verify", response_model=ResponseUserContext)
 def token_verify(
         verification_data: Annotated[
-            VerificationData, Body(embed=True)]
+            VerificationData, Body(...)]
 ):
     validated, hash_identifier, email, permission_conf  = (
         AuthService.token_verify(verification_data)

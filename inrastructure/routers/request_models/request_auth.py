@@ -9,6 +9,10 @@ class RegistrationData(BaseModel):
     apps: List[str] | None = None
 
 
+class RegistrationAPPData(BaseModel):
+    app: str
+
+
 class LoginData(BaseModel):
     email: str
     password: str

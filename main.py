@@ -15,7 +15,9 @@ middlewares = [
         backend=TokenAuthBackend()
     ),
 ]
-app = FastAPI(middleware=middlewares)
+app = FastAPI(
+    # middleware=middlewares
+)
 app.include_router(auth.router)
 app.include_router(
     users.router,

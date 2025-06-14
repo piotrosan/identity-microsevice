@@ -90,7 +90,6 @@ class UserService(Service):
                 password
             )
         )
-        import ipdb;ipdb.set_trace()
         if users:
             return users[0]
         return None

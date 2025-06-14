@@ -3,7 +3,7 @@ from typing import Sequence, Iterable, List, cast, Tuple, Generator
 from uuid import UUID
 
 from sqlalchemy import Select, Update, select, Row, and_, text, String
-from sqlalchemy.orm import contains_eager
+from sqlalchemy.orm import contains_eager, joinedload
 
 from inrastructure.database.sql.models.user import User, ExternalLogin
 
@@ -63,7 +63,6 @@ class SQLSelect:
         return (
             select(User)
             .join(User.external_logins)
-            .join(User.user_permissions)
             .where(
                 and_(
                     cast(
@@ -76,6 +75,5 @@ class SQLSelect:
                     ),
                 )
             )
-            .options(contains_eager(User.user_permissions))
-            .options(contains_eager(User.external_logins))
+            .options(joinedload(User.external_logins))
         )

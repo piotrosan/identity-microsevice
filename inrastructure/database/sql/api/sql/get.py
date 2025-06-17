@@ -54,10 +54,9 @@ class SQLSelect:
         )
 
 
-    def _select_all_data_user_from_password_email_sql(
+    def _select_all_data_user_from_email_sql(
             self,
             email: str,
-            password: str
     ):
 
         return (
@@ -68,11 +67,7 @@ class SQLSelect:
                     cast(
                         "ColumnElement[bool]",
                         User.email == email
-                    ),
-                    cast(
-                        "ColumnElement[bool]",
-                        User.password == password
-                    ),
+                    )
                 )
             )
             .options(joinedload(User.external_logins))

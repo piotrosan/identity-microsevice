@@ -84,15 +84,19 @@ class UserService(Service):
             email: str,
             password: str
     ) -> User | None:
-        users: List[User] = next(
-            self.infrastructure_db.get_all_context_for_user_email_password(
-                email,
-                password
-            )
+        users: List[User] = self.infrastructure_db.get_all_context_for_user_email(
+            email,
         )
-        if users:
-            return users[0]
-        return None
+
+        if not users:
+            return None
+
+        user: User = users[0]
+        if not user.check_password(password):
+            return None
+
+        return user
+
 
     def update_user_detail(self, user_hash: UUID, data: UpdateUserData):
         # user = self.infrastructure_db.get_all_context_for_user_hash(

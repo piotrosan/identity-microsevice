@@ -9,7 +9,7 @@ logging.config.dictConfig({
         #     "format": "app=%(app)s %(funcName)s() L%(lineno)-4d %(message)s call_trace=%(pathname)s L%(lineno)-4d"
         # },
         "file_formatter": {
-            "format": "DateTime=%(asctime)s app=%(app)s loglevel=%(levelname)-6s  ;"
+            "format": "DateTime=%(asctime)s loglevel=%(levelname)-6s  ;"
                       "func=%(funcName)s() ;"
                       "Line=%(lineno)-4d ;"
                       "message=%(message)s ;"

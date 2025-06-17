@@ -11,13 +11,15 @@ from sqlalchemy import (
     Text,
     ForeignKey,
     Enum,
-    JSON
+    JSON, LargeBinary
 )
+from sqlalchemy.dialects.postgresql import BYTEA
 
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import validates
 
+from inrastructure.database.sql.exception.user import HttpUserModelException
 from inrastructure.database.sql.models.base import Base
 from inrastructure.database.sql.models.mixins import CreatedUpdatedMixin
 from inrastructure.security.jwt.token import TokenFactory, AccessToken, \
@@ -37,7 +39,7 @@ class User(CreatedUpdatedMixin, Base):
     id = Column(Integer, primary_key=True, autoincrement="auto")
     hash_identifier = Column(String(255), unique=True, nullable=False)
     email = Column(String(255), unique=True, nullable=False)
-    password = Column(String(255), nullable=True)
+    password = Column(LargeBinary, nullable=True)
     age_range = Column(Enum(AgeRange), unique=False, nullable=True)
     additional_info = Column(Text, unique=False, nullable=True)
 
@@ -45,16 +47,23 @@ class User(CreatedUpdatedMixin, Base):
         back_populates="users"
     )
 
-    def set_password(self, password: str):
-        self.password = bcrypt.hashpw(
+    @classmethod
+    def bcrypt_pass(cls, password: str):
+        return bcrypt.hashpw(
             password.encode('UTF-8'),
-            bcrypt.gensalt()
+            bcrypt.gensalt(10)
         )
 
     def check_password(self, password: str) -> bool:
-        return self.password == bcrypt.hashpw(
-            password.encode('UTF-8'),
-            bcrypt.gensalt())
+        import ipdb;ipdb.set_trace()
+        if not bcrypt.checkpw(
+                self.bcrypt_pass(password),
+                self.password
+        ):
+            raise HttpUserModelException(
+                detail='Password doesnt match', status_code=400
+            )
+        return True
 
     def set_hash_identifier(self, email: str):
         self.hash_identifier = str(

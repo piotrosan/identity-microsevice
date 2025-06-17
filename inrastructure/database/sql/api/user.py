@@ -28,7 +28,7 @@ class CreateUserDBAPI(DBEngineAbstract):
         try:
             user = User(**user_data)
             user.set_hash_identifier(user.email)
-            user.set_password(user.password)
+            user.password = User.bcrypt_pass(user.password)
             external_login_data = ExternalLogin(**external_login_data)
             user.external_logins = external_login_data
             self.insert_objects([user])
@@ -123,25 +123,27 @@ class GetUserDBAPI(DBEngineAbstract, SQLSelect):
                 status_code=400
             )
 
-    def get_all_context_for_user_email_password(
+    def get_all_context_for_user_email(
             self,
             email: str,
-            password: str
-    ) -> Iterator[Any]:
+    ) -> List[Any]:
         try:
-            return self.query_statement(
-                self._select_all_data_user_from_password_email_sql(
+             result = next(self.query_statement(
+                self._select_all_data_user_from_email_sql(
                     email,
-                    password
                 )
-            )
+             ))
+             return result
         except exc.SQLAlchemyError as e:
             logger.critical("Problem wile select all users")
             raise HttpUserDBException(
                 detail=f"Can not select user {e}",
                 status_code=400
             )
-
+        except StopIteration as e:
+            return []
+        except IndexError as e:
+            return []
 
 class IdentityUserDBAPI(
     CreateUserDBAPI,

@@ -57,7 +57,7 @@ class User(CreatedUpdatedMixin, Base):
     def check_password(self, password: str) -> bool:
         import ipdb;ipdb.set_trace()
         if not bcrypt.checkpw(
-                self.bcrypt_pass(password),
+                password.encode('UTF-8'),
                 self.password
         ):
             raise HttpUserModelException(
@@ -100,7 +100,6 @@ class User(CreatedUpdatedMixin, Base):
 
     def get_access_token(self):
 
-        apps = [up.app for up in self.user_permissions]
         access_token: AccessToken = TokenFactory.create_access_token(
             {
                 "user_data": {
@@ -112,7 +111,6 @@ class User(CreatedUpdatedMixin, Base):
 
     def get_refresh_token(self):
 
-        apps = [up.app for up in self.user_permissions]
         refresh_token: RefreshToken = TokenFactory.create_refresh_token(
             {
                 "user_data": {

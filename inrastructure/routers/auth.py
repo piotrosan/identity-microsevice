@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter
 from fastapi import Body
 from redis import Redis
+from starlette.requests import Request
 
 from domain.auth.service import AuthService
 from domain.auth.login_command import RegisterUserCommandFactory
@@ -106,7 +107,8 @@ async def app_unregister(
 @router.post("/token-verify", response_model=ResponseUserContext)
 def token_verify(
         verification_data: Annotated[
-            VerificationData, Body(...)]
+            VerificationData, Body(...)],
+        request: Request
 ):
     validated, hash_identifier, email, permission_conf  = (
         AuthService.token_verify(verification_data)
@@ -116,6 +118,13 @@ def token_verify(
         permission=permission_conf,
         hash_identifier=hash_identifier
     )
+
+
+@router.get("/token-validate", response_model=dict)
+def token_validate(request: Request):
+    return {
+        'hash_identifier': request.user.hash_identifier
+    }
 
 
 @router.post("/refresh-token", response_model=RefreshTokenResponse)

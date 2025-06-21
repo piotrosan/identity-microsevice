@@ -3,12 +3,10 @@ from inrastructure.database.sql.models import User
 from inrastructure.requester_with_async.async_request import AsyncRequester
 
 
-class UserPermissionInApps:
+class UserPermissionFromMicroservicesApps:
 
     redis = None
     registry = None
-
-    Req = AsyncRequester
 
     def __init__(self, u: User):
         self.user = u
@@ -18,12 +16,12 @@ class UserPermissionInApps:
     def _prepare_req(self):
         data = [
             {
-                'url': f"{v['url']}",
+                'url': v['url'],
                 'method': v['method'],
                 'headers': {'Authorization': self.user.get_access_token()},
             }  for k, v in self.registry.items()
         ]
-        return self.Req(data)
+        return AsyncRequester(data)
 
     async def get_permissions(self):
         req = self._prepare_req()

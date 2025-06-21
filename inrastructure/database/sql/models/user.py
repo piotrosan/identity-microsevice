@@ -55,7 +55,6 @@ class User(CreatedUpdatedMixin, Base):
         )
 
     def check_password(self, password: str) -> bool:
-        import ipdb;ipdb.set_trace()
         if not bcrypt.checkpw(
                 password.encode('UTF-8'),
                 self.password
@@ -98,7 +97,7 @@ class User(CreatedUpdatedMixin, Base):
             )
         return email
 
-    def get_access_token(self):
+    def get_access_token(self, apps):
 
         access_token: AccessToken = TokenFactory.create_access_token(
             {
@@ -109,7 +108,7 @@ class User(CreatedUpdatedMixin, Base):
             })
         return access_token
 
-    def get_refresh_token(self):
+    def get_refresh_token(self, apps):
 
         refresh_token: RefreshToken = TokenFactory.create_refresh_token(
             {

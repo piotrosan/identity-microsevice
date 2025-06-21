@@ -37,10 +37,10 @@ def login(
             LoginData, Body(...)]
 ) -> ResponseRegisterUser:
     login_command = command.from_request_data(user_data)
-    user, context_address, hash_identifier = login_command()
+    user, context_address, hash_identifier, register_app_list = login_command()
     return ResponseRegisterUser(
-        access_token=user.get_access_token().access_token,
-        refresh_token=user.get_refresh_token().refresh_token,
+        access_token=user.get_access_token(register_app_list).access_token,
+        refresh_token=user.get_refresh_token(register_app_list).refresh_token,
         context_address=context_address,
         hash_identifier=hash_identifier
     )

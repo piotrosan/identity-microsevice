@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 from uuid import UUID
 
 from domain.exception.http.auth import LoginHttpException
@@ -16,7 +16,7 @@ class Login:
     def __init__(self, command: LoginData):
         self.command = command
 
-    def _login(self) -> Tuple[User, str, UUID]:
+    def _login(self) -> Tuple[User, str, UUID, List[str]]:
         if not self.command:
             raise LoginHttpException(status_code=400)
         iu_db_api = IdentityUserDBAPI()
@@ -27,9 +27,15 @@ class Login:
         )
         rc = RedisCache()
         context_address = rc.set_context(user)
-        return user, context_address, user.hash_identifier
+        register_apps: dict = rc.get_app_registry()
+        return (
+            user,
+            context_address,
+            user.hash_identifier,
+            list(register_apps.keys())
+        )
 
-    def __call__(self) -> Tuple[User, str, UUID]:
+    def __call__(self) -> Tuple[User, str, UUID, List[str]]:
         return self._login()
 
 class RegisterUserCommandFactory:

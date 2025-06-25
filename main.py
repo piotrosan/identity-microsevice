@@ -8,7 +8,7 @@ from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
 from inrastructure.cache.api.redis import RedisCache
-from inrastructure.routers import auth, users, logging
+from inrastructure.routers import auth, users, logging, config
 from inrastructure.security.middleware.auth import TokenAuthBackend
 from settings import HOST, PORT, APP_ID, SSL_CERTFILE, SSL_KEYFILE
 
@@ -56,6 +56,11 @@ app.include_router(
     logging.router,
     # dependencies=[Depends()]
 )
+app.include_router(
+    config.router,
+    # dependencies=[Depends()]
+)
+
 if __name__ == "__main__":
     # Start uvicorn
     # https://stackoverflow.com/questions/69207474/enable-https-using-uvicorn

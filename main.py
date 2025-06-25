@@ -10,7 +10,7 @@ from starlette.middleware.cors import CORSMiddleware
 from inrastructure.cache.api.redis import RedisCache
 from inrastructure.routers import auth, users, logging
 from inrastructure.security.middleware.auth import TokenAuthBackend
-from settings import DOMAIN, PORT, APP_ID
+from settings import HOST, PORT, APP_ID, SSL_CERTFILE, SSL_KEYFILE
 
 origins = [
     'http://localhost:3000',
@@ -61,6 +61,8 @@ if __name__ == "__main__":
     # https://stackoverflow.com/questions/69207474/enable-https-using-uvicorn
     uvicorn.run(
         app,
-        host=DOMAIN,
-        port=PORT
+        host=HOST,
+        port=PORT,
+        ssl_certfile=SSL_CERTFILE,
+        ssl_keyfile=SSL_KEYFILE
     )

@@ -12,9 +12,8 @@ from inrastructure.routers.request_models.request_auth import RegistrationData
 from inrastructure.routers.request_models.request_user import UpdateUserData
 from inrastructure.security.jwt.token import TokenFactory, AccessToken, \
     RefreshToken
-from inrastructure.settings.context_app import settings
 from inrastructure.mail.link_tools import generate_activation_link
-from settings import root_path
+from settings import root_path, HOST, PORT, SSL_CERTFILE
 
 
 class UserService(Service):
@@ -68,7 +67,7 @@ class UserService(Service):
         activation_template = "activation_link.html"
         data = {
             'activation_link': generate_activation_link(
-                user, settings.host, settings.http_secure)
+                user, HOST, bool(SSL_CERTFILE))
         }
         body = render_template(template_root, activation_template, data)
         await send_mail("Activate user", body, [user.email])

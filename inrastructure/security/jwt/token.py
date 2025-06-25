@@ -62,7 +62,9 @@ class Token(
         self.iss = os.getenv("iss")
 
     def set_user_data(self, user_data: dict):
-        user_data['apps'] = [APP_ID,]
+        if not user_data.get('apps'):
+            user_data['apps'] = []
+        user_data['apps'] = user_data['apps'] + [APP_ID]
         self.__dict__.update(user_data)
 
     def _get_dump_payload(self):

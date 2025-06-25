@@ -2,7 +2,7 @@
 from sqlalchemy import and_, or_, Select
 from typing import cast
 
-from inrastructure.settings.db import PAGINATION_PER_PAGE
+from inrastructure.settings.database import PAGINATION_PER_PAGE
 
 
 class Pagination:

@@ -6,7 +6,7 @@ root_path = os.path.abspath(os.path.dirname(__file__))
 
 SSL_KEYFILE = None
 SSL_CERTFILE = None
-DOMAIN = 'localhost'
+HOST = 'localhost'
 PORT = 8001
 
-BASE_URL = f"{'https' if SSL_CERTFILE else 'http'}://{DOMAIN}:{PORT}"
+BASE_URL = f"{'https' if SSL_CERTFILE else 'http'}://{HOST}:{PORT}"

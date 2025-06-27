@@ -11,6 +11,8 @@ class RegistrationData(BaseModel):
 
 class RegistrationAPPData(BaseModel):
     app: str
+    name: str
+    na_me: str
 
 
 class LoginData(BaseModel):

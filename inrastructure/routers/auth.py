@@ -85,7 +85,7 @@ async def app_register(
         ]
 ) -> GenericResponse:
     r = RedisCache()
-    r.set_app_registry(registration_data.app)
+    r.set_app_registry(**registration_data.model_dump(mode='python'))
     return GenericResponse(message='App registered', timestamp='')
 
 

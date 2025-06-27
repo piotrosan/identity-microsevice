@@ -32,7 +32,7 @@ middlewares = [
 
 def register_app():
     rc = RedisCache()
-    rc.set_app_registry(APP_ID)
+    rc.set_app_registry(APP_ID, 'Identity', 'identity')
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

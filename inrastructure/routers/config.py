@@ -1,5 +1,6 @@
-from fastapi import APIRouter
-from starlette.requests import Request
+from fastapi import APIRouter, Request
+
+from inrastructure.cache.api.redis import RedisCache
 
 router = APIRouter(
     prefix="/config",
@@ -8,9 +9,12 @@ router = APIRouter(
 )
 
 
-
 @router.get("/")
 def configuration(request: Request) -> dict:
+
+    rc = RedisCache()
+    apps = rc.get_app_registry()
+
     return {
-        'apps': ['test-knowledge', 'test-grammar']
+        'apps': apps
     }

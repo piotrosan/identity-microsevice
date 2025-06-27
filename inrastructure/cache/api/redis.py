@@ -59,26 +59,37 @@ class RedisCache:
             'email': email,
         }
 
-    def set_app_registry(self, app_id):
-        if self.redis_server.hexists(
-            name=self.APP_PREFIX,
-            key=app_id,
-        ):
-            self.redis_server.hset(
+    def set_app_registry(self, app, name, na_me):
+        result = self.redis_server.json().get(self.APP_PREFIX, '$')
+
+        if not result:
+            self.redis_server.json().set(
                 name=self.APP_PREFIX,
-                key=app_id,
-                value=app_id
+                path='$',
+                obj=[{'app': app, 'name': name, 'na_me': na_me}]
             )
+            return
 
-    def unset_app_registry(self, app_id):
-        if self.redis_server.hexists(
-            name=self.APP_PREFIX,
-            key=app_id,
-        ):
-            self.redis_server.hdel(
+        exist = [
+            True for index, res in enumerate(result[0])
+            if res['app'] == app
+        ]
+
+        if not any(exist):
+            self.redis_server.json().arrappend(
                 self.APP_PREFIX,
-                *[app_id]
+                '$',
+                {'app': app, 'name': name, 'na_me': na_me}
             )
 
-    def get_app_registry(self) -> dict:
-        return self.redis_server.hgetall(self.APP_PREFIX)
+    def unset_app_registry(self, app):
+        result = self.redis_server.json().get(self.APP_PREFIX, '$')
+        for index, res in enumerate(result[0]):
+            if res['app'] == app:
+                self.redis_server.json().delete(
+                    self.APP_PREFIX,
+                    f'$.[{index}]',
+                )
+
+    def get_app_registry(self) -> List[List[dict]]:
+        return self.redis_server.json().get(self.APP_PREFIX, '$')

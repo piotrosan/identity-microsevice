@@ -7,6 +7,7 @@ from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
+import settings
 from inrastructure.cache.api.redis import RedisCache
 from inrastructure.routers import auth, users, logging, config
 from inrastructure.security.middleware.auth import TokenAuthBackend
@@ -32,7 +33,12 @@ middlewares = [
 
 def register_app():
     rc = RedisCache()
-    rc.set_app_registry(APP_ID, 'Identity', 'identity')
+    rc.set_app_registry(
+        APP_ID,
+        'Identity',
+        'identity',
+        settings.BASE_URL,
+    )
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

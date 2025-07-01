@@ -1,3 +1,5 @@
+from typing import List
+
 from inrastructure.cache.api.redis import RedisCache
 from inrastructure.database.sql.models import User
 from inrastructure.requester_with_async.async_request import AsyncRequester
@@ -11,7 +13,7 @@ class UserPermissionFromMicroservicesApps:
     def __init__(self, u: User):
         self.user = u
         self.redis = RedisCache()
-        self.registry: dict = self.redis.get_app_registry()
+        self.registry: List[List[dict]] = self.redis.get_app_registry()
 
     def _prepare_req(self):
         data = [
@@ -19,7 +21,7 @@ class UserPermissionFromMicroservicesApps:
                 'url': v['url'],
                 'method': v['method'],
                 'headers': {'Authorization': self.user.get_access_token()},
-            }  for k, v in self.registry.items()
+            }  for k, v in self.registry[0][0].items()
         ]
         return AsyncRequester(data)
 

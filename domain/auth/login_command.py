@@ -27,12 +27,14 @@ class Login:
         )
         rc = RedisCache()
         context_address = rc.set_context(user)
-        register_apps: dict = rc.get_app_registry()
+        register_apps: List[List[dict]] = rc.get_app_registry()
+
+
         return (
             user,
             context_address,
             user.hash_identifier,
-            list(register_apps.keys())
+            list(register_apps[0][0])
         )
 
     def __call__(self) -> Tuple[User, str, UUID, List[str]]:

@@ -59,14 +59,14 @@ class RedisCache:
             'email': email,
         }
 
-    def set_app_registry(self, app, name, na_me):
+    def set_app_registry(self, app, name, na_me, host):
         result = self.redis_server.json().get(self.APP_PREFIX, '$')
 
         if not result:
             self.redis_server.json().set(
                 name=self.APP_PREFIX,
                 path='$',
-                obj=[{'app': app, 'name': name, 'na_me': na_me}]
+                obj=[{'app': app, 'name': name, 'na_me': na_me, 'host': host}]
             )
             return
 
@@ -79,7 +79,7 @@ class RedisCache:
             self.redis_server.json().arrappend(
                 self.APP_PREFIX,
                 '$',
-                {'app': app, 'name': name, 'na_me': na_me}
+                {'app': app, 'name': name, 'na_me': na_me, 'host': host}
             )
 
     def unset_app_registry(self, app):

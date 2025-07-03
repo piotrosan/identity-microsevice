@@ -1,3 +1,4 @@
+from asyncio import Task
 from typing import Tuple, List
 from uuid import UUID
 
@@ -8,6 +9,8 @@ from inrastructure.database.sql.api.user import IdentityUserDBAPI
 from inrastructure.database.sql.models import User
 from inrastructure.routers.request_models.request_auth import LoginData
 from inrastructure.validators.user import UserDataValidator
+from inrastructure.webhooks.permissions import \
+    UserPermissionFromMicroservicesApps
 
 
 class Login:
@@ -28,14 +31,23 @@ class Login:
         rc = RedisCache()
         context_address = rc.set_context(user)
         register_apps: List[List[dict]] = rc.get_app_registry()
+        ups: List[dict] = UserPermissionFromMicroservicesApps.get_permissions(
+            user)
 
+        if not ups:
+            return (
+                user,
+                context_address,
+                user.hash_identifier,
+                []
+            )
 
         return (
-            user,
-            context_address,
-            user.hash_identifier,
-            list(register_apps[0][0])
-        )
+                user,
+                context_address,
+                user.hash_identifier,
+
+            )
 
     def __call__(self) -> Tuple[User, str, UUID, List[str]]:
         return self._login()

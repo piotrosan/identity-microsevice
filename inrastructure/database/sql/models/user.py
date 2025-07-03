@@ -97,7 +97,7 @@ class User(CreatedUpdatedMixin, Base):
             )
         return email
 
-    def get_access_token(self, apps):
+    def get_access_token(self, apps: List[str]):
 
         access_token: AccessToken = TokenFactory.create_access_token(
             {

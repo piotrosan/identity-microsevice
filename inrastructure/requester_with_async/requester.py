@@ -5,7 +5,7 @@ class Requester:
     r = None
     session = None
 
-    def build_request(self, **kwargs):
+    def _build_request(self, **kwargs):
         req = requests.Request(
             method=kwargs['method'],
             headers=kwargs.get('headers', None),
@@ -15,7 +15,7 @@ class Requester:
         )
         self.r = req.prepare()
 
-    def build_session(self):
+    def _build_session(self):
         self.session = requests.Session()
 
     async def send(self):

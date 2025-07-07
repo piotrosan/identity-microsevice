@@ -39,6 +39,7 @@ class UserService(Service):
             self,
             registration_data: RegistrationData
     ) -> Tuple[AccessToken, RefreshToken, str, UUID]:
+        # 1. create user
         user = self._add_user(registration_data)
         context_identifier = self._set_cache_context(user)
 
@@ -54,7 +55,11 @@ class UserService(Service):
                 "apps": registration_data.apps
             }
         })
+        # 2. send email
         await self._send_activation_link(user)
+
+        # 3. create permissions in microservice
+        # todo
         return (
             access_token, # 0
             refresh_token, # 1

@@ -31,7 +31,8 @@ class RedisCache:
 
     def set_context(
             self,
-            user: User
+            user: User,
+            apps: List[dict]
     ):
         user_data = self._user_data_dump(user)
         self.redis_server.hset(
@@ -39,9 +40,30 @@ class RedisCache:
             key='email',
             value=user_data[user.hash_identifier]["email"]
         )
+        self.redis_server.hset(
+            name=self.PREFIX.format(user_identifier=user.hash_identifier),
+            key='apps',
+            value=';'.join([app['id'] for app in apps])
+        )
+
         return self.PREFIX.format(user_identifier=user.hash_identifier)
 
-    def get_context(self, user: User) -> dict[str, str | dict]:
+
+    def get_mcrsrv_for_usr_cxt(self, user: User) -> List[dict]:
+        registry: List[List[dict]] = self.get_app_registry()
+        context: dict[str, str | List[str]] = self.get_context(user)
+
+        result = []
+        for r in registry[0]:
+            if r['id'] == context['id']:
+                result.append({
+                    'id': context['id'],
+                    'callback_url': context['callback_url'],
+                    'method': context['method'],
+                })
+        return result
+
+    def get_context(self, user: User) -> dict[str, str | List[str]]:
         email = self.redis_server.hget(
             self.PREFIX.format(user_identifier=user.hash_identifier),
             'email'
@@ -52,11 +74,15 @@ class RedisCache:
                 detail='Email doesnt fit to user',
                 status_code=400
             )
-
+        apps = self.redis_server.hget(
+            self.PREFIX.format(user_identifier=user.hash_identifier),
+            'apps'
+        ) # id;id;id
         return {
             'context_address': self.PREFIX.format(
                 user_identifier=user.hash_identifier),
             'email': email,
+            'apps': apps.split(';')
         }
 
     def set_app_registry(self, app, name, na_me, host):

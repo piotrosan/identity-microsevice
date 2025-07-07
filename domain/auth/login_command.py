@@ -19,28 +19,30 @@ class Login:
     def __init__(self, command: LoginData):
         self.command = command
 
-    def _login(self) -> Tuple[User, str, UUID, List[str]]:
+    def _login(self) -> Tuple[User, str, UUID]:
         if not self.command:
             raise LoginHttpException(status_code=400)
+        # 1. get user
         iu_db_api = IdentityUserDBAPI()
         us = UserService(iu_db_api)
-        user = us.get_user_detail_for_login_data(
+        user: User = us.get_user_detail_for_login_data(
             self.command.email,
             self.command.password
         )
-        rc = RedisCache()
-        context_address = rc.set_context(user)
-        register_apps: List[List[dict]] = rc.get_app_registry()
-        ups: List[dict] = UserPermissionFromMicroservicesApps.get_permissions(
+
+        # 2. get apps id from microservice for user permission
+        """
+            ups:
+            [{'id': settings.APP_ID,
+            'name': settings.NAME,
+            'na_me': settings.NA_ME}]
+        """
+        apps: List[dict] = UserPermissionFromMicroservicesApps.get_permissions(
             user)
 
-        if not ups:
-            return (
-                user,
-                context_address,
-                user.hash_identifier,
-                []
-            )
+        # 3. create context for user in Redis
+        rc = RedisCache()
+        context_address = rc.set_context(user, apps)
 
         return (
                 user,

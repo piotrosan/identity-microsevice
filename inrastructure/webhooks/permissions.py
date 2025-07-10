@@ -1,5 +1,6 @@
 import sys
 from asyncio import Task
+from enum import Enum
 from types import FrameType
 from typing import List, Dict
 
@@ -8,6 +9,9 @@ from inrastructure.database.sql.models import User
 from inrastructure.logger_sys.settings.logger_conf import logger
 from inrastructure.requester_with_async.async_request import AsyncRequester
 
+class PermissionOperation(Enum):
+    GET = 'get'
+    CREATE = 'create'
 
 class UserPermissionFromMicroservicesApps:
 
@@ -79,11 +83,11 @@ class UserPermissionFromMicroservicesApps:
         a.close_loop()
 
     @classmethod
-    def get_result(cls, u: User, kind: str) -> List[dict]:
+    def get_result(cls, u: User, kind: PermissionOperation) -> List[dict]:
         self = cls(u)
         {
-            'create': self.create_permissions,
-            'get': self.get_permissions
+            PermissionOperation.CREATE: self.create_permissions,
+            PermissionOperation.GET: self.get_permissions
         }[kind]()
         [
             logger.exception(

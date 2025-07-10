@@ -13,13 +13,14 @@ class UserPermissionFromMicroservicesApps:
 
     redis = None
     mcr_srv_cxt = None
+    results = None
 
     def __init__(self, u: User):
         self.user = u
         self.redis = RedisCache()
         self.mcr_srv_cxt: List[dict] = self.redis.get_mcrsrv_for_usr_cxt(u)
 
-    def _prepare_req(self):
+    def _prepare_async_for_get_perm(self):
         data = [
             {
                 'url': req['callback_url'],
@@ -31,7 +32,7 @@ class UserPermissionFromMicroservicesApps:
         ]
         return AsyncRequester(data)
 
-    def _prepare_req_for_create(self):
+    def _prepare_async_for_create_perm(self):
         data = [
             {
                 'url': '/permission/user_group_role',
@@ -51,14 +52,10 @@ class UserPermissionFromMicroservicesApps:
         tb = sys.exception().__traceback__
         return f'{r.with_traceback(tb)}'
 
-
-
-    @classmethod
-    def get_permissions(cls, u: User) -> List[dict]:
-        self = cls(u)
-        req = self._prepare_req()
-        tasks: List[Task] = req.get_data_from_requests()
-        results = [{
+    def get_permissions(self):
+        a = self._prepare_async_for_get_perm()
+        tasks: List[Task] = a.get_tasks()
+        self.results = [{
             'result': task.result(),
             'exception': task.exception(),
             'stack': task.get_stack(),
@@ -66,22 +63,12 @@ class UserPermissionFromMicroservicesApps:
         }
             for task in tasks
         ]
-        req.close_loop()
+        a.close_loop()
 
-        [
-            logger.exception(
-                cls._transform_exception_to_log(r['exception'])
-            )
-            for r in results if r['fail']
-        ]
-        return [r['result'] for r in results if not r['fail']]
-
-    @classmethod
-    def create_permissions(cls, u: User) -> List[dict]:
-        self = cls(u)
-        req = self._prepare_req()
-        tasks: List[Task] = req.get_data_from_requests()
-        results = [{
+    def create_permissions(self):
+        a = self._prepare_async_for_create_perm()
+        tasks: List[Task] = a.get_tasks()
+        self.results = [{
             'result': task.result(),
             'exception': task.exception(),
             'stack': task.get_stack(),
@@ -89,12 +76,19 @@ class UserPermissionFromMicroservicesApps:
         }
             for task in tasks
         ]
-        req.close_loop()
+        a.close_loop()
 
+    @classmethod
+    def get_result(cls, u: User, kind: str) -> List[dict]:
+        self = cls(u)
+        {
+            'create': self.create_permissions,
+            'get': self.get_permissions
+        }[kind]()
         [
             logger.exception(
-                cls._transform_exception_to_log(r['exception'])
+                self._transform_exception_to_log(r['exception'])
             )
-            for r in results if r['fail']
+            for r in self.results if r['fail']
         ]
-        return [r['result'] for r in results if not r['fail']]
+        return [r['result'] for r in self.results if not r['fail']]

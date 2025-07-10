@@ -23,7 +23,7 @@ class AsyncRequester(Requester):
         self._build_request(**kwargs)
         return self.loop.create_task(self.send())
 
-    def get_data_from_requests(self) -> List[Task]:
+    def get_tasks(self) -> List[Task]:
         self.loop.run_until_complete(asyncio.gather(*self.requesters))
         return self.tasks
 

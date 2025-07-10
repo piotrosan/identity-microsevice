@@ -37,7 +37,7 @@ class Login:
             'name': settings.NAME,
             'na_me': settings.NA_ME}]
         """
-        apps: List[dict] = UserPermissionFromMicroservicesApps.get_permissions(
+        apps: List[dict] = UserPermissionFromMicroservicesApps._get_permissions(
             user)
 
         # 3. create context for user in Redis

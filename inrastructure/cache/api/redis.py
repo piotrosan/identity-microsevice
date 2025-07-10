@@ -48,7 +48,6 @@ class RedisCache:
 
         return self.PREFIX.format(user_identifier=user.hash_identifier)
 
-
     def get_mcrsrv_for_usr_cxt(self, user: User) -> List[dict]:
         registry: List[List[dict]] = self.get_app_registry()
         context: dict[str, str | List[str]] = self.get_context(user)
@@ -62,6 +61,11 @@ class RedisCache:
                     'method': context['method'],
                 })
         return result
+
+    def get_mcrsrv_for_app_cxt(self, apps: List[str]) -> List[dict]:
+        registry: List[List[dict]] = self.get_app_registry()
+        # todo
+        return
 
     def get_context(self, user: User) -> dict[str, str | List[str]]:
         email = self.redis_server.hget(

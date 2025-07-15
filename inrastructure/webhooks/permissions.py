@@ -1,3 +1,4 @@
+import abc
 import sys
 from asyncio import Task
 from enum import Enum
@@ -14,38 +15,48 @@ class PermissionOperation(Enum):
     CREATE = 'create'
 
 
-class BasePermissionOperation:
+class BasePermissionOperation(abc.ABC):
     _apps_ids = None
     _user = None
     _redis = None
     _mcr_srv_cxt = None
     _results = None
 
-    def __init__(self, u: User, app_ids: List[dict]=None):
+    def __init__(
+            self,
+            u: User,
+            app_ids: List[dict]=None
+    ):
         self._user = u
         self._redis = RedisCache()
         self._apps_ids = app_ids
 
+    @abc.abstractmethod
     def _prepare_async(self):
         raise NotImplemented
 
     def run(self):
         a = self._prepare_async()
         tasks: List[Task] = a.get_tasks()
-        self._results = [{
-            'result': task.result(),
-            'exception': task.exception(),
-            'stack': task.get_stack(),
-            'fail': True if task.exception() else False
-        }
-            for task in tasks
+        self._results = [
+            {
+                'result': task.result(),
+                'exception': task.exception(),
+                'stack': task.get_stack(),
+                'fail': True if task.exception() else False
+            } for task in tasks
         ]
         a.close_loop()
 
 
 class CreatePermissionsInMicroservice(BasePermissionOperation):
 
-    def __init__(self, apps_ids: List[str], *args, **kwargs):
+    def __init__(
+            self,
+            apps_ids: List[str],
+            *args,
+            **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self._apps_ids = apps_ids
         self._mcr_srv_cxt: List[dict] = self._redis.get_mcrsrv_for_app_cxt(
@@ -67,7 +78,12 @@ class CreatePermissionsInMicroservice(BasePermissionOperation):
 
 class GetPermissionFromMicroservice(BasePermissionOperation):
 
-    def __init__(self, u: User, *args, **kwargs):
+    def __init__(
+            self,
+            u: User,
+            *args,
+            **kwargs
+    ):
         super().__init__(u, *args, **kwargs)
         self._mcr_srv_cxt: List[dict] = self._redis.get_mcrsrv_for_usr_cxt(u)
 
@@ -97,10 +113,17 @@ class UserPermission:
     @classmethod
     def get_result_operation(
             cls,
-            u: User,
             kind: PermissionOperation,
+            u: User,
             apps_ids: List[str]=None
     ) -> List[dict]:
+
+        """
+            return:
+            [{'id': settings.APP_ID,
+            'name': settings.NAME,
+            'na_me': settings.NA_ME}]
+        """
         self = {
             PermissionOperation.CREATE: CreatePermissionsInMicroservice,
             PermissionOperation.GET: GetPermissionFromMicroservice

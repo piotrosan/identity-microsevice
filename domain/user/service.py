@@ -16,6 +16,35 @@ from inrastructure.mail.link_tools import generate_activation_link
 from settings import root_path, HOST, PORT, SSL_CERTFILE
 
 
+class AbstractProcess:
+
+    _ordered_steps = None
+    _result = None
+
+    def build_step(self, step, *args):
+        if self._ordered_steps is not None:
+            self._ordered_steps.append({
+                'step': step,
+                'args': args
+            })
+        else:
+            self._ordered_steps = [{
+                'step': step,
+                'args': args
+            }]
+
+    def run_process(self):
+        self._result = []
+        for step_with_args in self._ordered_steps:
+            self._result.append(
+                step_with_args['step'](*step_with_args['args'])
+            )
+
+    def get_result(self):
+        return self._result
+
+
+
 class UserService(Service):
 
     model = User
@@ -30,15 +59,16 @@ class UserService(Service):
             json.loads(registration_data.external_login),
         )
 
-    def _set_cache_context(self, user: User) -> str:
+    def _set_cache_context(self, user: User, apps: List[dict]) -> str:
         cache_context = RedisCache()
-        context_identifier = cache_context.set_context(user)
+        context_identifier = cache_context.set_context(user, apps)
         return context_identifier
 
     async def register(
             self,
             registration_data: RegistrationData
     ) -> Tuple[AccessToken, RefreshToken, str, UUID]:
+
         # 1. create user
         user = self._add_user(registration_data)
         context_identifier = self._set_cache_context(user)

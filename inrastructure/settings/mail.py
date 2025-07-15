@@ -8,7 +8,7 @@ conf = ConnectionConfig(
     MAIL_PASSWORD=SecretStr(os.getenv('mail_password')),
     MAIL_FROM=os.getenv('mail_from'),
     MAIL_PORT=587,
-    MAIL_SERVER="whatsgoingon.home.pl",
+    MAIL_SERVER="test.test.pl",
     MAIL_STARTTLS=True,
     MAIL_SSL_TLS=False,
 )

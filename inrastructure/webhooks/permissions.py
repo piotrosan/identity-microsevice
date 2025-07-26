@@ -1,3 +1,4 @@
+import abc
 import sys
 from asyncio import Task
 from enum import Enum
@@ -14,7 +15,7 @@ class PermissionOperation(Enum):
     CREATE = 'create'
 
 
-class BasePermissionOperation:
+class BasePermissionOperation(abc.ABC):
     _apps_ids = None
     _user = None
     _redis = None
@@ -30,6 +31,7 @@ class BasePermissionOperation:
         self._redis = RedisCache()
         self._apps_ids = app_ids
 
+    @abc.abstractmethod
     def _prepare_async(self):
         raise NotImplemented
 
@@ -115,6 +117,13 @@ class UserPermission:
             u: User,
             apps_ids: List[str]=None
     ) -> List[dict]:
+
+        """
+            return:
+            [{'id': settings.APP_ID,
+            'name': settings.NAME,
+            'na_me': settings.NA_ME}]
+        """
         self = {
             PermissionOperation.CREATE: CreatePermissionsInMicroservice,
             PermissionOperation.GET: GetPermissionFromMicroservice
